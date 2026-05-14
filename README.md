@@ -1,0 +1,2 @@
+# SistemaInventarioVentasCPP
+Proyecto de programacion
