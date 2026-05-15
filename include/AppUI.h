@@ -13,6 +13,10 @@ private:
     bool mostrarProductos;
     bool mostrarClientes;
 
+    int idModificarCliente;
+    bool modoEdicionCliente;
+    char mensajeCliente[150];
+
     char usuario[50];
     char password[50];
     char mensajeLogin[100];
@@ -21,11 +25,20 @@ private:
     char categoriaProducto[100];
     float precioProducto;
     int stockProducto;
+
     char nombreCliente[100];
     char telefonoCliente[100];
     char correoCliente[100];
     int idEliminarCliente;
     int idEliminar;
+    int idBuscarCliente;
+    char buscarNombreCliente[100];
+
+    int idModificarProducto;
+    int idBuscarProducto;
+    char buscarNombreProducto[100];
+    char mensajeProducto[150];
+    bool modoEdicionProducto;
 
     void mostrarLogin();
     void mostrarMenuPrincipal();

@@ -11,6 +11,7 @@
 using namespace std;
 
 AppUI::AppUI() {
+
     loginCorrecto = false;
     mostrarProductos = false;
     mostrarClientes = false;
@@ -29,18 +30,32 @@ AppUI::AppUI() {
     strcpy_s(nombreCliente, "");
     strcpy_s(telefonoCliente, "");
     strcpy_s(correoCliente, "");
+    idBuscarCliente = 0;
+    strcpy_s(buscarNombreCliente, "");
 
     idEliminarCliente = 0;
+    idModificarProducto = 0;
+    idBuscarProducto = 0;
+    strcpy_s(buscarNombreProducto, "");
+    strcpy_s(mensajeProducto, "");
+    modoEdicionProducto = false;
+
+    idModificarCliente = 0;
+    modoEdicionCliente = false;
+    strcpy_s(mensajeCliente, "");
 }
 
 void AppUI::ejecutar() {
     glfwInit();
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Sistema Inventario y Ventas", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1600, 900, "Sistema Inventario y Ventas", NULL, NULL);
     glfwMakeContextCurrent(window);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.FontGlobalScale = 1.4f;
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
@@ -88,18 +103,50 @@ void AppUI::ejecutar() {
 }
 
 void AppUI::mostrarLogin() {
-    ImGui::SetNextWindowSize(ImVec2(420, 260));
-    ImGui::SetNextWindowPos(ImVec2(430, 200), ImGuiCond_Once);
+    ImGuiIO& io = ImGui::GetIO();
 
-    ImGui::Begin("Login - Sistema de Inventario", NULL, ImGuiWindowFlags_NoResize);
+    float ancho = 720.0f;
+    float alto = 500.0f;
 
-    ImGui::Text("Sistema de Inventario y Ventas");
+    ImGui::SetNextWindowSize(ImVec2(ancho, alto), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(
+        ImVec2((io.DisplaySize.x - ancho) / 2, (io.DisplaySize.y - alto) / 2),
+        ImGuiCond_Always
+    );
+
+    ImGui::Begin("Login - Sistema de Inventario", NULL,
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoMove
+    );
+
+    ImGui::Dummy(ImVec2(0, 15));
+
+    ImGui::SetCursorPosX((ancho - 260) / 2);
+    ImGui::Text("SISTEMA DE INVENTARIO Y VENTAS");
+
+    ImGui::Dummy(ImVec2(0, 10));
     ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, 20));
 
-    ImGui::InputText("Usuario", usuario, IM_ARRAYSIZE(usuario));
-    ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
+    ImGui::SetCursorPosX(90);
+    ImGui::Text("Usuario");
+    ImGui::SetCursorPosX(90);
+    ImGui::SetNextItemWidth(340);
+    ImGui::InputText("##usuario", usuario, IM_ARRAYSIZE(usuario));
 
-    if (ImGui::Button("Ingresar", ImVec2(120, 35))) {
+    ImGui::Dummy(ImVec2(0, 10));
+
+    ImGui::SetCursorPosX(90);
+    ImGui::Text("Contraseña");
+    ImGui::SetCursorPosX(90);
+    ImGui::SetNextItemWidth(340);
+    ImGui::InputText("##password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
+
+    ImGui::Dummy(ImVec2(0, 20));
+
+    ImGui::SetCursorPosX((ancho - 180) / 2);
+    if (ImGui::Button("Ingresar", ImVec2(180, 40))) {
         if (login.validarUsuario(usuario, password)) {
             loginCorrecto = true;
             strcpy_s(mensajeLogin, "");
@@ -110,6 +157,8 @@ void AppUI::mostrarLogin() {
     }
 
     if (strlen(mensajeLogin) > 0) {
+        ImGui::Dummy(ImVec2(0, 10));
+        ImGui::SetCursorPosX(130);
         ImGui::TextColored(ImVec4(1, 0, 0, 1), mensajeLogin);
     }
 
@@ -117,45 +166,72 @@ void AppUI::mostrarLogin() {
 }
 
 void AppUI::mostrarMenuPrincipal() {
-    ImGui::SetNextWindowSize(ImVec2(300, 350));
-    ImGui::SetNextWindowPos(ImVec2(30, 80), ImGuiCond_Once);
 
-    ImGui::Begin("Menu Principal");
+    ImGuiIO& io = ImGui::GetIO();
 
-    ImGui::Text("Bienvenido al sistema");
-    ImGui::Separator();
+    float ancho = 1150.0f;
+    float alto = 620.0f;
 
-    if (ImGui::Button("Productos", ImVec2(180, 40))) {
+    ImGui::SetNextWindowSize(ImVec2(ancho, alto), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(
+        ImVec2((io.DisplaySize.x - ancho) / 2,
+            (io.DisplaySize.y - alto) / 2),
+        ImGuiCond_Always
+    );
+
+    ImGui::Begin("MENU PRINCIPAL", NULL,
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoMove
+    );
+
+    ImGui::Dummy(ImVec2(0, 10));
+
+    if (ImGui::Button("Productos", ImVec2(210, 55))) {
         mostrarProductos = true;
     }
 
-    if (ImGui::Button("Clientes", ImVec2(180, 40))) {
+    ImGui::SameLine();
+
+    if (ImGui::Button("Clientes", ImVec2(210, 55))) {
         mostrarClientes = true;
     }
 
-    if (ImGui::Button("Ventas", ImVec2(180, 40))) {
+    ImGui::SameLine();
+
+    if (ImGui::Button("Ventas", ImVec2(210, 55))) {
+        // mostrarVentas = true;
     }
 
-    if (ImGui::Button("Inventario", ImVec2(180, 40))) {
+    ImGui::SameLine();
+
+    if (ImGui::Button("Inventario", ImVec2(210, 55))) {
+        // mostrarInventario = true;
     }
 
-    if (ImGui::Button("Cerrar sesion", ImVec2(180, 40))) {
+    ImGui::SameLine();
+
+    if (ImGui::Button("Cerrar Sesion", ImVec2(230, 55))) {
         loginCorrecto = false;
         mostrarProductos = false;
+        mostrarClientes = false;
+
         strcpy_s(usuario, "");
         strcpy_s(password, "");
     }
+
+    ImGui::Separator();
 
     ImGui::End();
 }
 
 void AppUI::mostrarModuloProductos() {
-    ImGui::SetNextWindowSize(ImVec2(820, 560));
-    ImGui::SetNextWindowPos(ImVec2(370, 80), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(1080, 750), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(130, 70), ImGuiCond_Once);
 
     ImGui::Begin("Modulo Productos", &mostrarProductos);
 
-    ImGui::Text("CRUD de Productos");
+    ImGui::Text("Gestion de Productos");
     ImGui::Separator();
 
     ImGui::InputText("Nombre", nombreProducto, IM_ARRAYSIZE(nombreProducto));
@@ -163,37 +239,114 @@ void AppUI::mostrarModuloProductos() {
     ImGui::InputInt("Stock", &stockProducto);
     ImGui::InputText("Categoria", categoriaProducto, IM_ARRAYSIZE(categoriaProducto));
 
-    if (ImGui::Button("Agregar Producto", ImVec2(160, 35))) {
-        if (strlen(nombreProducto) > 0 && precioProducto > 0 && stockProducto >= 0) {
-            productoDAO.agregarProducto(nombreProducto, precioProducto, stockProducto, categoriaProducto);
+    if (!modoEdicionProducto) {
+        if (ImGui::Button("Agregar Producto", ImVec2(180, 35))) {
+            if (strlen(nombreProducto) > 0 && precioProducto > 0 && stockProducto >= 0) {
+                productoDAO.agregarProducto(nombreProducto, precioProducto, stockProducto, categoriaProducto);
 
-            strcpy_s(nombreProducto, "");
-            strcpy_s(categoriaProducto, "");
-            precioProducto = 0.0f;
-            stockProducto = 0;
+                strcpy_s(nombreProducto, "");
+                strcpy_s(categoriaProducto, "");
+                precioProducto = 0.0f;
+                stockProducto = 0;
+
+                strcpy_s(mensajeProducto, "Producto agregado correctamente");
+            }
+            else {
+                strcpy_s(mensajeProducto, "Complete los datos del producto");
+            }
+        }
+    }
+    else {
+        if (ImGui::Button("Guardar Cambios", ImVec2(180, 35))) {
+            if (idModificarProducto > 0 && strlen(nombreProducto) > 0 && precioProducto > 0 && stockProducto >= 0) {
+                productoDAO.actualizarProducto(
+                    idModificarProducto,
+                    nombreProducto,
+                    precioProducto,
+                    stockProducto,
+                    categoriaProducto
+                );
+
+                idModificarProducto = 0;
+                modoEdicionProducto = false;
+
+                strcpy_s(nombreProducto, "");
+                strcpy_s(categoriaProducto, "");
+                precioProducto = 0.0f;
+                stockProducto = 0;
+
+                strcpy_s(mensajeProducto, "Producto actualizado correctamente");
+            }
         }
     }
 
     ImGui::SameLine();
 
-    if (ImGui::Button("Limpiar", ImVec2(100, 35))) {
+    if (ImGui::Button("Limpiar", ImVec2(120, 35))) {
         strcpy_s(nombreProducto, "");
         strcpy_s(categoriaProducto, "");
+        strcpy_s(buscarNombreProducto, "");
+        strcpy_s(mensajeProducto, "");
+
         precioProducto = 0.0f;
         stockProducto = 0;
+        idEliminar = 0;
+        idBuscarProducto = 0;
+        idModificarProducto = 0;
+        modoEdicionProducto = false;
+    }
+
+    if (strlen(mensajeProducto) > 0) {
+        ImGui::TextColored(ImVec4(0, 1, 0, 1), mensajeProducto);
     }
 
     ImGui::Separator();
 
-    if (ImGui::BeginTable("tabla_productos", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+    ImGui::Text("Busqueda de productos");
+
+    ImGui::InputInt("Buscar por ID", &idBuscarProducto);
+
+    if (ImGui::Button("Buscar ID", ImVec2(120, 35))) {
+        Producto producto = productoDAO.buscarProductoPorId(idBuscarProducto);
+
+        if (producto.getId() > 0) {
+            idModificarProducto = producto.getId();
+            strcpy_s(nombreProducto, producto.getNombre().c_str());
+            precioProducto = producto.getPrecio();
+            stockProducto = producto.getStock();
+            strcpy_s(categoriaProducto, producto.getCategoria().c_str());
+
+            modoEdicionProducto = true;
+            strcpy_s(mensajeProducto, "Producto encontrado. Puede modificarlo.");
+        }
+        else {
+            strcpy_s(mensajeProducto, "No se encontro producto con ese ID");
+        }
+    }
+
+    ImGui::SameLine();
+
+    ImGui::InputText("Buscar por nombre", buscarNombreProducto, IM_ARRAYSIZE(buscarNombreProducto));
+
+    ImGui::Separator();
+
+    vector<Producto> productos;
+
+    if (strlen(buscarNombreProducto) > 0) {
+        productos = productoDAO.buscarProductosPorNombre(buscarNombreProducto);
+    }
+    else {
+        productos = productoDAO.obtenerProductos();
+    }
+
+    if (ImGui::BeginTable("tabla_productos", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
         ImGui::TableSetupColumn("ID");
         ImGui::TableSetupColumn("Nombre");
         ImGui::TableSetupColumn("Precio");
         ImGui::TableSetupColumn("Stock");
         ImGui::TableSetupColumn("Categoria");
+        ImGui::TableSetupColumn("Accion");
         ImGui::TableHeadersRow();
-
-        vector<Producto> productos = productoDAO.obtenerProductos();
 
         for (int i = 0; i < productos.size(); i++) {
             ImGui::TableNextRow();
@@ -212,66 +365,183 @@ void AppUI::mostrarModuloProductos() {
 
             ImGui::TableSetColumnIndex(4);
             ImGui::Text("%s", productos[i].getCategoria().c_str());
+
+            ImGui::TableSetColumnIndex(5);
+
+            string btnEditar = "Editar##" + to_string(productos[i].getId());
+
+            if (ImGui::Button(btnEditar.c_str(), ImVec2(80, 30))) {
+
+                idModificarProducto = productos[i].getId();
+
+                strcpy_s(nombreProducto, productos[i].getNombre().c_str());
+
+                precioProducto = productos[i].getPrecio();
+
+                stockProducto = productos[i].getStock();
+
+                strcpy_s(categoriaProducto,
+                    productos[i].getCategoria().c_str());
+
+                modoEdicionProducto = true;
+
+                strcpy_s(mensajeProducto,
+                    "Editando producto seleccionado");
+            }
+
+            ImGui::SameLine();
+
+            string btnEliminar = "Eliminar##" +
+                to_string(productos[i].getId());
+
+            if (ImGui::Button(btnEliminar.c_str(),
+                ImVec2(90, 30))) {
+
+                if (productoDAO.eliminarProducto(
+                    productos[i].getId())) {
+
+                    strcpy_s(mensajeProducto,
+                        "Producto eliminado correctamente");
+                }
+                else {
+
+                    strcpy_s(mensajeProducto,
+                        "No se pudo eliminar el producto");
+                }
+            }
         }
 
         ImGui::EndTable();
     }
 
-    ImGui::Separator();
-
-    ImGui::InputInt("ID a eliminar", &idEliminar);
-
-    if (ImGui::Button("Eliminar Producto", ImVec2(160, 35))) {
-        productoDAO.eliminarProducto(idEliminar);
-        idEliminar = 0;
-    }
-
     ImGui::End();
 }
+
 void AppUI::mostrarModuloClientes() {
 
-    ImGui::SetNextWindowSize(ImVec2(820, 560));
-    ImGui::SetNextWindowPos(ImVec2(370, 80), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(1100, 650), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(260, 130), ImGuiCond_Once);
 
     ImGui::Begin("Modulo Clientes", &mostrarClientes);
 
     ImGui::Text("CRUD de Clientes");
     ImGui::Separator();
 
-    ImGui::InputText("Nombre", nombreCliente, IM_ARRAYSIZE(nombreCliente));
-    ImGui::InputText("Telefono", telefonoCliente, IM_ARRAYSIZE(telefonoCliente));
-    ImGui::InputText("Correo", correoCliente, IM_ARRAYSIZE(correoCliente));
+    // FORMULARIO
+    ImGui::InputText("Nombre##clienteNombre", nombreCliente, IM_ARRAYSIZE(nombreCliente));
+    ImGui::InputText("Telefono##clienteTelefono", telefonoCliente, IM_ARRAYSIZE(telefonoCliente));
+    ImGui::InputText("Correo##clienteCorreo", correoCliente, IM_ARRAYSIZE(correoCliente));
 
-    if (ImGui::Button("Agregar Cliente", ImVec2(160, 35))) {
+    if (!modoEdicionCliente) {
+        if (ImGui::Button("Agregar Cliente##btnAgregarCliente", ImVec2(180, 35))) {
 
-        if (strlen(nombreCliente) > 0) {
+            if (strlen(nombreCliente) > 0) {
 
-            clienteDAO.agregarCliente(
-                nombreCliente,
-                telefonoCliente,
-                correoCliente
-            );
+                clienteDAO.agregarCliente(
+                    nombreCliente,
+                    telefonoCliente,
+                    correoCliente
+                );
 
-            strcpy_s(nombreCliente, "");
-            strcpy_s(telefonoCliente, "");
-            strcpy_s(correoCliente, "");
+                strcpy_s(nombreCliente, "");
+                strcpy_s(telefonoCliente, "");
+                strcpy_s(correoCliente, "");
+
+                strcpy_s(mensajeCliente, "Cliente agregado correctamente");
+            }
+        }
+    }
+    else {
+        if (ImGui::Button("Guardar Cambios##btnGuardarCliente", ImVec2(190, 35))) {
+
+            if (idModificarCliente > 0 && strlen(nombreCliente) > 0) {
+
+                clienteDAO.actualizarCliente(
+                    idModificarCliente,
+                    nombreCliente,
+                    telefonoCliente,
+                    correoCliente
+                );
+
+                idModificarCliente = 0;
+                modoEdicionCliente = false;
+
+                strcpy_s(nombreCliente, "");
+                strcpy_s(telefonoCliente, "");
+                strcpy_s(correoCliente, "");
+
+                strcpy_s(mensajeCliente, "Cliente actualizado correctamente");
+            }
         }
     }
 
     ImGui::SameLine();
 
-    if (ImGui::Button("Limpiar", ImVec2(100, 35))) {
+    if (ImGui::Button("Limpiar##btnLimpiarCliente", ImVec2(120, 35))) {
 
         strcpy_s(nombreCliente, "");
         strcpy_s(telefonoCliente, "");
         strcpy_s(correoCliente, "");
+        strcpy_s(buscarNombreCliente, "");
+
+        idBuscarCliente = 0;
+        idModificarCliente = 0;
+        modoEdicionCliente = false;
+
+        strcpy_s(mensajeCliente, "");
+    }
+
+    if (strlen(mensajeCliente) > 0) {
+        ImGui::TextColored(ImVec4(0, 1, 0, 1), mensajeCliente);
     }
 
     ImGui::Separator();
 
-    vector<Cliente> clientes = clienteDAO.obtenerClientes();
+    // BUSQUEDA
+    ImGui::Text("Busqueda de clientes");
 
-    if (ImGui::BeginTable("tabla_clientes", 4,
+    ImGui::InputInt("Buscar por ID##buscarClienteID", &idBuscarCliente);
+
+    if (ImGui::Button("Buscar ID##btnBuscarClienteID", ImVec2(130, 35))) {
+
+        Cliente cliente = clienteDAO.buscarClientePorId(idBuscarCliente);
+
+        if (cliente.getId() > 0) {
+
+            idModificarCliente = cliente.getId();
+
+            strcpy_s(nombreCliente, sizeof(nombreCliente), cliente.getNombre().c_str());
+            strcpy_s(telefonoCliente, sizeof(telefonoCliente), cliente.getTelefono().c_str());
+            strcpy_s(correoCliente, sizeof(correoCliente), cliente.getCorreo().c_str());
+
+            modoEdicionCliente = true;
+
+            strcpy_s(mensajeCliente, "Cliente encontrado. Puede modificarlo.");
+        }
+        else {
+            strcpy_s(mensajeCliente, "No se encontro cliente con ese ID");
+        }
+    }
+
+    ImGui::SameLine();
+
+    ImGui::InputText("Buscar por nombre##buscarClienteNombre", buscarNombreCliente, IM_ARRAYSIZE(buscarNombreCliente));
+
+    ImGui::Separator();
+
+    // LISTADO
+    vector<Cliente> clientes;
+
+    if (strlen(buscarNombreCliente) > 0) {
+        clientes = clienteDAO.buscarClientesPorNombre(buscarNombreCliente);
+    }
+    else {
+        clientes = clienteDAO.obtenerClientes();
+    }
+
+    if (ImGui::BeginTable(
+        "tabla_clientes",
+        5,
         ImGuiTableFlags_Borders |
         ImGuiTableFlags_RowBg)) {
 
@@ -279,6 +549,11 @@ void AppUI::mostrarModuloClientes() {
         ImGui::TableSetupColumn("Nombre");
         ImGui::TableSetupColumn("Telefono");
         ImGui::TableSetupColumn("Correo");
+        ImGui::TableSetupColumn(
+            "Accion",
+            ImGuiTableColumnFlags_WidthFixed,
+            230.0f
+        );
 
         ImGui::TableHeadersRow();
 
@@ -297,20 +572,41 @@ void AppUI::mostrarModuloClientes() {
 
             ImGui::TableSetColumnIndex(3);
             ImGui::Text("%s", clientes[i].getCorreo().c_str());
+
+            ImGui::TableSetColumnIndex(4);
+
+            string btnEditar =
+                "Editar##clienteEditar" +
+                to_string(clientes[i].getId());
+
+            if (ImGui::Button(btnEditar.c_str(), ImVec2(85, 30))) {
+
+                idModificarCliente = clientes[i].getId();
+
+                strcpy_s(nombreCliente, sizeof(nombreCliente), clientes[i].getNombre().c_str());
+                strcpy_s(telefonoCliente, sizeof(telefonoCliente), clientes[i].getTelefono().c_str());
+                strcpy_s(correoCliente, sizeof(correoCliente), clientes[i].getCorreo().c_str());
+
+                modoEdicionCliente = true;
+
+                strcpy_s(mensajeCliente, "Editando cliente seleccionado");
+            }
+
+            ImGui::SameLine();
+
+            string btnEliminar =
+                "Eliminar##clienteEliminar" +
+                to_string(clientes[i].getId());
+
+            if (ImGui::Button(btnEliminar.c_str(), ImVec2(100, 30))) {
+
+                clienteDAO.eliminarCliente(clientes[i].getId());
+
+                strcpy_s(mensajeCliente, "Cliente eliminado correctamente");
+            }
         }
 
         ImGui::EndTable();
-    }
-
-    ImGui::Separator();
-
-    ImGui::InputInt("ID Cliente", &idEliminarCliente);
-
-    if (ImGui::Button("Eliminar Cliente", ImVec2(160, 35))) {
-
-        clienteDAO.eliminarCliente(idEliminarCliente);
-
-        idEliminarCliente = 0;
     }
 
     ImGui::End();
