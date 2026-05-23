@@ -134,6 +134,7 @@
     <ClInclude Include="include\ClienteDAO.h" />
     <ClInclude Include="include\ColaClientes.h" />
     <ClInclude Include="include\ConexionBD.h" />
+    <ClInclude Include="include\CorteDAO.h" />
     <ClInclude Include="include\ListaProductos.h" />
     <ClInclude Include="include\Login.h" />
     <ClInclude Include="include\PilaVentas.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="src\ClienteDAO.cpp" />
     <ClCompile Include="src\ColaClientes.cpp" />
     <ClCompile Include="src\ConexionBD.cpp" />
+    <ClCompile Include="src\CorteDAO.cpp" />
     <ClCompile Include="src\ListaProductos.cpp" />
     <ClCompile Include="src\Login.cpp" />
     <ClCompile Include="src\main.cpp" />

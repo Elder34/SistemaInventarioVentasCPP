@@ -32,17 +32,19 @@ AppUI::AppUI() {
     strcpy_s(correoCliente, "");
     idBuscarCliente = 0;
     strcpy_s(buscarNombreCliente, "");
-
     idEliminarCliente = 0;
+    idModificarCliente = 0;
+    modoEdicionCliente = false;
+    strcpy_s(mensajeCliente, "");
+
     idModificarProducto = 0;
     idBuscarProducto = 0;
     strcpy_s(buscarNombreProducto, "");
     strcpy_s(mensajeProducto, "");
     modoEdicionProducto = false;
 
-    idModificarCliente = 0;
-    modoEdicionCliente = false;
-    strcpy_s(mensajeCliente, "");
+    mostrarCortes = false;
+
 }
 
 void AppUI::ejecutar() {
@@ -72,13 +74,6 @@ void AppUI::ejecutar() {
         }
         else {
             mostrarMenuPrincipal();
-
-            if (mostrarProductos) {
-                mostrarModuloProductos();
-            }
-            if (mostrarClientes) {
-                mostrarModuloClientes();
-            }
         }
 
         ImGui::Render();
@@ -101,7 +96,6 @@ void AppUI::ejecutar() {
     glfwDestroyWindow(window);
     glfwTerminate();
 }
-
 void AppUI::mostrarLogin() {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -110,7 +104,8 @@ void AppUI::mostrarLogin() {
 
     ImGui::SetNextWindowSize(ImVec2(ancho, alto), ImGuiCond_Always);
     ImGui::SetNextWindowPos(
-        ImVec2((io.DisplaySize.x - ancho) / 2, (io.DisplaySize.y - alto) / 2),
+        ImVec2((io.DisplaySize.x - ancho) / 2,
+            (io.DisplaySize.y - alto) / 2),
         ImGuiCond_Always
     );
 
@@ -120,50 +115,53 @@ void AppUI::mostrarLogin() {
         ImGuiWindowFlags_NoMove
     );
 
-    ImGui::Dummy(ImVec2(0, 15));
+    ImGui::Dummy(ImVec2(0, 20));
 
-    ImGui::SetCursorPosX((ancho - 260) / 2);
+    ImGui::SetCursorPosX(170);
     ImGui::Text("SISTEMA DE INVENTARIO Y VENTAS");
 
-    ImGui::Dummy(ImVec2(0, 10));
+    ImGui::Dummy(ImVec2(0, 20));
     ImGui::Separator();
-    ImGui::Dummy(ImVec2(0, 20));
+    ImGui::Dummy(ImVec2(0, 25));
 
-    ImGui::SetCursorPosX(90);
+    ImGui::SetCursorPosX(120);
     ImGui::Text("Usuario");
-    ImGui::SetCursorPosX(90);
-    ImGui::SetNextItemWidth(340);
-    ImGui::InputText("##usuario", usuario, IM_ARRAYSIZE(usuario));
 
-    ImGui::Dummy(ImVec2(0, 10));
+    ImGui::SetCursorPosX(120);
+    ImGui::SetNextItemWidth(450);
+    ImGui::InputText("##usuarioLogin", usuario, IM_ARRAYSIZE(usuario));
 
-    ImGui::SetCursorPosX(90);
+    ImGui::Dummy(ImVec2(0, 15));
+
+    ImGui::SetCursorPosX(120);
     ImGui::Text("Contraseña");
-    ImGui::SetCursorPosX(90);
-    ImGui::SetNextItemWidth(340);
-    ImGui::InputText("##password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
-    ImGui::Dummy(ImVec2(0, 20));
+    ImGui::SetCursorPosX(120);
+    ImGui::SetNextItemWidth(450);
+    ImGui::InputText("##passwordLogin", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
-    ImGui::SetCursorPosX((ancho - 180) / 2);
-    if (ImGui::Button("Ingresar", ImVec2(180, 40))) {
+    ImGui::Dummy(ImVec2(0, 25));
+
+    ImGui::SetCursorPosX(270);
+    if (ImGui::Button("Ingresar##btnLogin", ImVec2(180, 45))) {
         if (login.validarUsuario(usuario, password)) {
             loginCorrecto = true;
             strcpy_s(mensajeLogin, "");
         }
         else {
-            strcpy_s(mensajeLogin, "Usuario o password incorrectos");
+            strcpy_s(mensajeLogin, "Usuario o contraseña incorrectos");
         }
     }
 
     if (strlen(mensajeLogin) > 0) {
-        ImGui::Dummy(ImVec2(0, 10));
-        ImGui::SetCursorPosX(130);
+        ImGui::Dummy(ImVec2(0, 15));
+        ImGui::SetCursorPosX(190);
         ImGui::TextColored(ImVec4(1, 0, 0, 1), mensajeLogin);
     }
 
     ImGui::End();
 }
+
 
 void AppUI::mostrarMenuPrincipal() {
 
@@ -187,20 +185,27 @@ void AppUI::mostrarMenuPrincipal() {
 
     ImGui::Dummy(ImVec2(0, 10));
 
+    // BOTONES EN UNA SOLA FILA
     if (ImGui::Button("Productos", ImVec2(210, 55))) {
         mostrarProductos = true;
+        mostrarClientes = false;
+        mostrarCortes = false;
     }
 
     ImGui::SameLine();
 
     if (ImGui::Button("Clientes", ImVec2(210, 55))) {
         mostrarClientes = true;
+        mostrarProductos = false;
+        mostrarCortes = false;
     }
 
     ImGui::SameLine();
 
-    if (ImGui::Button("Ventas", ImVec2(210, 55))) {
-        // mostrarVentas = true;
+    if (ImGui::Button("Cortes", ImVec2(210, 55))) {
+        mostrarCortes = true;
+        mostrarProductos = false;
+        mostrarClientes = false;
     }
 
     ImGui::SameLine();
@@ -212,9 +217,12 @@ void AppUI::mostrarMenuPrincipal() {
     ImGui::SameLine();
 
     if (ImGui::Button("Cerrar Sesion", ImVec2(230, 55))) {
+
         loginCorrecto = false;
+
         mostrarProductos = false;
         mostrarClientes = false;
+        mostrarCortes = false;
 
         strcpy_s(usuario, "");
         strcpy_s(password, "");
@@ -222,9 +230,18 @@ void AppUI::mostrarMenuPrincipal() {
 
     ImGui::Separator();
 
+    // MODULOS DENTRO DEL MENU (SIN VENTANAS EXTRA)
+    if (mostrarProductos)
+        mostrarModuloProductos();
+
+    if (mostrarClientes)
+        mostrarModuloClientes();
+
+    if (mostrarCortes)
+        mostrarModuloCortes();
+
     ImGui::End();
 }
-
 void AppUI::mostrarModuloProductos() {
     ImGui::SetNextWindowSize(ImVec2(1080, 750), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(130, 70), ImGuiCond_Once);
@@ -610,4 +627,62 @@ void AppUI::mostrarModuloClientes() {
     }
 
     ImGui::End();
+}
+void AppUI::mostrarModuloCortes() {
+
+    ImGui::Spacing();
+    ImGui::Text("Historial de Cortes");
+    ImGui::Separator();
+
+    if (ImGui::Button("Cerrar Cortes", ImVec2(180, 35))) {
+        mostrarCortes = false;
+    }
+
+    ImGui::Spacing();
+
+    vector<Corte> cortes = corteDAO.obtenerCortes();
+
+    if (ImGui::BeginTable(
+        "tablaCortes",
+        6,
+        ImGuiTableFlags_Borders |
+        ImGuiTableFlags_RowBg |
+        ImGuiTableFlags_Resizable))
+    {
+        ImGui::TableSetupColumn("ID");
+        ImGui::TableSetupColumn("Fecha");
+        ImGui::TableSetupColumn("Descripcion");
+        ImGui::TableSetupColumn("Vendedor");
+        ImGui::TableSetupColumn("Total");
+        ImGui::TableSetupColumn("Accion");
+
+        ImGui::TableHeadersRow();
+
+        for (int i = 0; i < cortes.size(); i++) {
+
+            ImGui::TableNextRow();
+
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("%d", cortes[i].id);
+
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Text("%s", cortes[i].fecha.c_str());
+
+            ImGui::TableSetColumnIndex(2);
+            ImGui::Text("%s", cortes[i].descripcion.c_str());
+
+            ImGui::TableSetColumnIndex(3);
+            ImGui::Text("%s", cortes[i].vendedor.c_str());
+
+            ImGui::TableSetColumnIndex(4);
+            ImGui::Text("Q %.2f", cortes[i].total);
+
+            ImGui::TableSetColumnIndex(5);
+
+            string btnVer = "Ver##corte" + to_string(cortes[i].id);
+            ImGui::Button(btnVer.c_str(), ImVec2(80, 30));
+        }
+
+        ImGui::EndTable();
+    }
 }

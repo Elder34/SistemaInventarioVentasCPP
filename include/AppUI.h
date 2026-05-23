@@ -2,6 +2,7 @@
 #include "ProductoDAO.h"
 #include "ClienteDAO.h"
 #include "Login.h"
+#include "CorteDAO.h"
 
 class AppUI {
 private:
@@ -13,10 +14,6 @@ private:
     bool mostrarProductos;
     bool mostrarClientes;
 
-    int idModificarCliente;
-    bool modoEdicionCliente;
-    char mensajeCliente[150];
-
     char usuario[50];
     char password[50];
     char mensajeLogin[100];
@@ -26,6 +23,9 @@ private:
     float precioProducto;
     int stockProducto;
 
+    int idModificarCliente;
+    bool modoEdicionCliente;
+    char mensajeCliente[150];
     char nombreCliente[100];
     char telefonoCliente[100];
     char correoCliente[100];
@@ -39,6 +39,11 @@ private:
     char buscarNombreProducto[100];
     char mensajeProducto[150];
     bool modoEdicionProducto;
+
+    void mostrarModuloCortes();
+    bool mostrarCortes = false;
+    CorteDAO corteDAO;
+
 
     void mostrarLogin();
     void mostrarMenuPrincipal();

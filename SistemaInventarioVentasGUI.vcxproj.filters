@@ -78,6 +78,9 @@
     <ClInclude Include="include\Venta.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="include\CorteDAO.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="libs\imgui\imgui.cpp">
@@ -138,6 +141,9 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="src\Venta.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CorteDAO.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>
