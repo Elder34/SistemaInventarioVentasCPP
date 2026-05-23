@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+
 using namespace std;
 
 class Producto {
@@ -14,11 +15,11 @@ public:
     Producto();
     Producto(int id, string nombre, float precio, int stock, string categoria);
 
-    int getId() const;
-    string getNombre() const;
-    float getPrecio() const;
-    int getStock() const;
-    string getCategoria() const;
+    int getId();
+    string getNombre();
+    float getPrecio();
+    int getStock();
+    string getCategoria();
 
     void setNombre(string nombre);
     void setPrecio(float precio);

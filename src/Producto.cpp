@@ -16,13 +16,24 @@ Producto::Producto(int id, string nombre, float precio, int stock, string catego
     this->categoria = categoria;
 }
 
-int Producto::getId() const { return id; }
-string Producto::getNombre() const { return nombre; }
-float Producto::getPrecio() const { return precio; }
-int Producto::getStock() const { return stock; }
-string Producto::getCategoria() const { return categoria; }
+int Producto::getId() { return id; }
+string Producto::getNombre() { return nombre; }
+float Producto::getPrecio() { return precio; }
+int Producto::getStock() { return stock; }
+string Producto::getCategoria() { return categoria; }
 
-void Producto::setNombre(string nombre) { this->nombre = nombre; }
-void Producto::setPrecio(float precio) { this->precio = precio; }
-void Producto::setStock(int stock) { this->stock = stock; }
-void Producto::setCategoria(string categoria) { this->categoria = categoria; }
+void Producto::setNombre(string nombre) {
+    this->nombre = nombre;
+}
+
+void Producto::setPrecio(float precio) {
+    this->precio = precio;
+}
+
+void Producto::setStock(int stock) {
+    this->stock = stock;
+}
+
+void Producto::setCategoria(string categoria) {
+    this->categoria = categoria;
+}

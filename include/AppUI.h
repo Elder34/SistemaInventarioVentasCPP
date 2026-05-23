@@ -44,6 +44,16 @@ private:
     bool mostrarCortes = false;
     CorteDAO corteDAO;
 
+    bool mostrarInventario;
+
+    int idProductoInventario;
+    int cantidadInventario;
+
+    char buscarInventario[100];
+    char mensajeInventario[150];
+
+    void mostrarModuloInventario();
+
 
     void mostrarLogin();
     void mostrarMenuPrincipal();

@@ -45,6 +45,14 @@ AppUI::AppUI() {
 
     mostrarCortes = false;
 
+    mostrarInventario = false;
+
+    idProductoInventario = 0;
+    cantidadInventario = 0;
+
+    strcpy_s(buscarInventario, "");
+    strcpy_s(mensajeInventario, "");
+
 }
 
 void AppUI::ejecutar() {
@@ -211,7 +219,10 @@ void AppUI::mostrarMenuPrincipal() {
     ImGui::SameLine();
 
     if (ImGui::Button("Inventario", ImVec2(210, 55))) {
-        // mostrarInventario = true;
+        mostrarInventario = true;
+        mostrarProductos = false;
+        mostrarClientes = false;
+        mostrarCortes = false;
     }
 
     ImGui::SameLine();
@@ -239,6 +250,9 @@ void AppUI::mostrarMenuPrincipal() {
 
     if (mostrarCortes)
         mostrarModuloCortes();
+
+    if (mostrarInventario)
+        mostrarModuloInventario();
 
     ImGui::End();
 }
@@ -681,6 +695,173 @@ void AppUI::mostrarModuloCortes() {
 
             string btnVer = "Ver##corte" + to_string(cortes[i].id);
             ImGui::Button(btnVer.c_str(), ImVec2(80, 30));
+        }
+
+        ImGui::EndTable();
+    }
+}
+void AppUI::mostrarModuloInventario() {
+
+    ImGui::Spacing();
+    ImGui::Text("Modulo Inventario");
+    ImGui::Separator();
+
+    ImGui::InputText("Buscar producto##buscarInventario",
+        buscarInventario,
+        IM_ARRAYSIZE(buscarInventario));
+
+    ImGui::InputInt("ID Producto##idInventario", &idProductoInventario);
+    ImGui::InputInt("Cantidad##cantidadInventario", &cantidadInventario);
+
+    vector<Producto> productos;
+
+    if (strlen(buscarInventario) > 0) {
+        productos = productoDAO.buscarProductosPorNombre(buscarInventario);
+    }
+    else {
+        productos = productoDAO.obtenerProductos();
+    }
+
+    if (ImGui::Button("Agregar Stock##btnAgregarStock", ImVec2(180, 35))) {
+
+        int idUsar = idProductoInventario;
+
+        if (idUsar == 0 && productos.size() == 1) {
+            idUsar = productos[0].getId();
+        }
+
+        Producto producto = productoDAO.buscarProductoPorId(idUsar);
+
+        if (producto.getId() > 0 && cantidadInventario > 0) {
+
+            int nuevoStock = producto.getStock() + cantidadInventario;
+
+            productoDAO.actualizarStockProducto(producto.getId(), nuevoStock);
+
+            strcpy_s(mensajeInventario, "Stock agregado correctamente");
+
+            idProductoInventario = producto.getId();
+        }
+        else {
+            strcpy_s(mensajeInventario, "Producto o cantidad invalida");
+        }
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Quitar Stock##btnQuitarStock", ImVec2(180, 35))) {
+
+        int idUsar = idProductoInventario;
+
+        if (idUsar == 0 && productos.size() == 1) {
+            idUsar = productos[0].getId();
+        }
+
+        Producto producto = productoDAO.buscarProductoPorId(idUsar);
+
+        if (producto.getId() > 0 && cantidadInventario > 0) {
+
+            int nuevoStock = producto.getStock() - cantidadInventario;
+
+            if (nuevoStock >= 0) {
+                productoDAO.actualizarStockProducto(producto.getId(), nuevoStock);
+                strcpy_s(mensajeInventario, "Stock reducido correctamente");
+                idProductoInventario = producto.getId();
+            }
+            else {
+                strcpy_s(mensajeInventario, "No puede quedar stock negativo");
+            }
+        }
+        else {
+            strcpy_s(mensajeInventario, "Producto o cantidad invalida");
+        }
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Limpiar##btnLimpiarInventario", ImVec2(120, 35))) {
+        idProductoInventario = 0;
+        cantidadInventario = 0;
+        strcpy_s(buscarInventario, "");
+        strcpy_s(mensajeInventario, "");
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Salir##btnSalirInventario", ImVec2(120, 35))) {
+
+        mostrarInventario = false;
+
+        idProductoInventario = 0;
+        cantidadInventario = 0;
+
+        strcpy_s(buscarInventario, "");
+        strcpy_s(mensajeInventario, "");
+    }
+
+    if (strlen(mensajeInventario) > 0) {
+        ImGui::TextColored(ImVec4(0, 1, 0, 1), mensajeInventario);
+    }
+
+    ImGui::Separator();
+
+    if (ImGui::BeginTable(
+        "tablaInventario",
+        6,
+        ImGuiTableFlags_Borders |
+        ImGuiTableFlags_RowBg |
+        ImGuiTableFlags_Resizable))
+    {
+        ImGui::TableSetupColumn("ID");
+        ImGui::TableSetupColumn("Producto");
+        ImGui::TableSetupColumn("Categoria");
+        ImGui::TableSetupColumn("Precio");
+        ImGui::TableSetupColumn("Stock");
+        ImGui::TableSetupColumn("Estado");
+
+        ImGui::TableHeadersRow();
+
+        for (int i = 0; i < productos.size(); i++) {
+
+            ImGui::TableNextRow();
+
+            ImGui::TableSetColumnIndex(0);
+
+            string btnSeleccionar =
+                "Seleccionar##inventario" +
+                to_string(productos[i].getId());
+
+            if (ImGui::Button(btnSeleccionar.c_str(), ImVec2(130, 30))) {
+                idProductoInventario = productos[i].getId();
+                strcpy_s(mensajeInventario, "Producto seleccionado");
+            }
+
+            ImGui::SameLine();
+            ImGui::Text("%d", productos[i].getId());
+
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Text("%s", productos[i].getNombre().c_str());
+
+            ImGui::TableSetColumnIndex(2);
+            ImGui::Text("%s", productos[i].getCategoria().c_str());
+
+            ImGui::TableSetColumnIndex(3);
+            ImGui::Text("Q %.2f", productos[i].getPrecio());
+
+            ImGui::TableSetColumnIndex(4);
+            ImGui::Text("%d", productos[i].getStock());
+
+            ImGui::TableSetColumnIndex(5);
+
+            if (productos[i].getStock() == 0) {
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), "Sin stock");
+            }
+            else if (productos[i].getStock() <= 5) {
+                ImGui::TextColored(ImVec4(1, 1, 0, 1), "Stock bajo");
+            }
+            else {
+                ImGui::TextColored(ImVec4(0, 1, 0, 1), "Disponible");
+            }
         }
 
         ImGui::EndTable();

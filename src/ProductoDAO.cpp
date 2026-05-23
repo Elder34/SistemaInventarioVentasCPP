@@ -1,5 +1,6 @@
 #include "ProductoDAO.h"
 #include "ConexionBD.h"
+
 #include <pqxx/pqxx>
 #include <iostream>
 
@@ -188,4 +189,33 @@ vector<Producto> ProductoDAO::buscarProductosPorNombre(string nombre) {
     }
 
     return productos;
+}
+bool ProductoDAO::actualizarStockProducto(
+    int idProducto,
+    int nuevoStock
+) {
+    try {
+
+        ConexionBD conexionBD;
+        pqxx::connection conexion =
+            conexionBD.conectar();
+
+        pqxx::work transaccion(conexion);
+
+        transaccion.exec_params(
+            "UPDATE productos "
+            "SET stock=$1 "
+            "WHERE id_producto=$2",
+            nuevoStock,
+            idProducto
+        );
+
+        transaccion.commit();
+        return true;
+    }
+    catch (const exception& e) {
+        cout << "Error stock: "
+            << e.what() << endl;
+        return false;
+    }
 }
