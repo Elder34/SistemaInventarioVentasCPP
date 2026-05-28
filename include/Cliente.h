@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
 
+#include <string>
 using namespace std;
 
 class Cliente {
@@ -9,17 +9,21 @@ private:
     string nombre;
     string telefono;
     string correo;
+    string nit;
 
 public:
     Cliente();
-    Cliente(int id, string nombre, string telefono, string correo);
+    Cliente(int id, string nombre, string telefono, string correo, string nit);
 
-    int getId() const;
-    string getNombre() const;
-    string getTelefono() const;
-    string getCorreo() const;
+    int getId();
+    string getNombre();
+    string getTelefono();
+    string getCorreo();
+    string getNit();
 
+    void setId(int id);
     void setNombre(string nombre);
     void setTelefono(string telefono);
     void setCorreo(string correo);
+    void setNit(string nit);
 };

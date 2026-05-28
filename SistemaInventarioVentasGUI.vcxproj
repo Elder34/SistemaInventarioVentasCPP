@@ -107,6 +107,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)libs\imgui;$(ProjectDir)libs\glfw\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <AdditionalDependencies>glfw3.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib</AdditionalDependencies>
@@ -122,6 +123,7 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)libs\imgui;$(ProjectDir)libs\glfw\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <AdditionalDependencies>glfw3.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib</AdditionalDependencies>
@@ -137,11 +139,11 @@
     <ClInclude Include="include\CorteDAO.h" />
     <ClInclude Include="include\ListaProductos.h" />
     <ClInclude Include="include\Login.h" />
-    <ClInclude Include="include\PilaVentas.h" />
     <ClInclude Include="include\Producto.h" />
     <ClInclude Include="include\ProductoDAO.h" />
     <ClInclude Include="include\Usuario.h" />
     <ClInclude Include="include\Venta.h" />
+    <ClInclude Include="include\VentaDAO.h" />
     <ClInclude Include="libs\imgui\imconfig.h" />
     <ClInclude Include="libs\imgui\imgui.h" />
     <ClInclude Include="libs\imgui\imgui_impl_glfw.h" />
@@ -169,11 +171,11 @@
     <ClCompile Include="src\ListaProductos.cpp" />
     <ClCompile Include="src\Login.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\PilaVentas.cpp" />
     <ClCompile Include="src\Producto.cpp" />
     <ClCompile Include="src\ProductoDAO.cpp" />
     <ClCompile Include="src\Usuario.cpp" />
     <ClCompile Include="src\Venta.cpp" />
+    <ClCompile Include="src\VentaDAO.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

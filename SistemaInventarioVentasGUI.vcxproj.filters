@@ -63,9 +63,6 @@
     <ClInclude Include="include\Login.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
-    <ClInclude Include="include\PilaVentas.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
     <ClInclude Include="include\Producto.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
@@ -79,6 +76,9 @@
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
     <ClInclude Include="include\CorteDAO.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="include\VentaDAO.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
@@ -128,9 +128,6 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
-    <ClCompile Include="src\PilaVentas.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
     <ClCompile Include="src\Producto.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
@@ -144,6 +141,9 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="src\CorteDAO.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VentaDAO.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

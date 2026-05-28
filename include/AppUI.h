@@ -3,6 +3,12 @@
 #include "ClienteDAO.h"
 #include "Login.h"
 #include "CorteDAO.h"
+#include "VentaDAO.h"
+#include "Venta.h"
+#include <vector>
+#include <string>
+
+using namespace std;
 
 class AppUI {
 private:
@@ -33,6 +39,10 @@ private:
     int idEliminar;
     int idBuscarCliente;
     char buscarNombreCliente[100];
+    char nitCliente[30];
+    char buscarNitClienteVenta[30];
+    char clienteSeleccionadoVenta[100];
+    int idClienteVenta;
 
     int idModificarProducto;
     int idBuscarProducto;
@@ -43,22 +53,47 @@ private:
     void mostrarModuloCortes();
     bool mostrarCortes = false;
     CorteDAO corteDAO;
+    bool mostrarDetalleCorte;
+    Corte corteSeleccionado;
 
     bool mostrarInventario;
-
     int idProductoInventario;
     int cantidadInventario;
-
     char buscarInventario[100];
     char mensajeInventario[150];
 
-    void mostrarModuloInventario();
+    VentaDAO ventaDAO;
+    char clienteVenta[100];
+    char descripcionVenta[200];
+    char vendedorVenta[100];
+    float totalVenta;
+    char mensajeVenta[150];
 
 
     void mostrarLogin();
     void mostrarMenuPrincipal();
     void mostrarModuloProductos();
     void mostrarModuloClientes();
+    void mostrarModuloInventario();
+
+    char buscarProductoVenta[100];
+    int cantidadVenta;
+    
+
+    void mostrarVentaRapida();
+    struct ItemVenta {
+        int idProducto;
+        string nombre;
+        int cantidad;
+        float precio;
+        float subtotal;
+    };
+
+    vector<ItemVenta> carritoVenta;
+
+    float pagoClienteVenta;
+    float cambioVenta;
+    int metodoPagoVenta;
 
 public:
     AppUI();

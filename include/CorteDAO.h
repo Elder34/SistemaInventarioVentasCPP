@@ -11,9 +11,11 @@ struct Corte {
     string descripcion;
     string vendedor;
     float total;
+    string metodoPago;
 };
 
 class CorteDAO {
 public:
     vector<Corte> obtenerCortes();
+    
 };

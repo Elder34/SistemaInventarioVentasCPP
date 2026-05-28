@@ -1,5 +1,5 @@
 #include "AppUI.h"
-
+#include <regex>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -10,6 +10,7 @@
 
 using namespace std;
 
+//constructor 
 AppUI::AppUI() {
 
     loginCorrecto = false;
@@ -36,6 +37,9 @@ AppUI::AppUI() {
     idModificarCliente = 0;
     modoEdicionCliente = false;
     strcpy_s(mensajeCliente, "");
+    strcpy_s(buscarNitClienteVenta, "");
+    strcpy_s(clienteSeleccionadoVenta, "");
+    idClienteVenta = 0;
 
     idModificarProducto = 0;
     idBuscarProducto = 0;
@@ -44,7 +48,7 @@ AppUI::AppUI() {
     modoEdicionProducto = false;
 
     mostrarCortes = false;
-
+    mostrarDetalleCorte = false;
     mostrarInventario = false;
 
     idProductoInventario = 0;
@@ -53,8 +57,17 @@ AppUI::AppUI() {
     strcpy_s(buscarInventario, "");
     strcpy_s(mensajeInventario, "");
 
-}
+    strcpy_s(buscarProductoVenta, "");
+    cantidadVenta = 1;
+    strcpy_s(mensajeVenta, "");
+    carritoVenta.clear();
 
+    pagoClienteVenta = 0.0f;
+    cambioVenta = 0.0f;
+    metodoPagoVenta = 0;
+
+}
+//Funcion de ejecutar
 void AppUI::ejecutar() {
     glfwInit();
 
@@ -104,6 +117,8 @@ void AppUI::ejecutar() {
     glfwDestroyWindow(window);
     glfwTerminate();
 }
+
+//Funcion Login
 void AppUI::mostrarLogin() {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -176,7 +191,7 @@ void AppUI::mostrarMenuPrincipal() {
     ImGuiIO& io = ImGui::GetIO();
 
     float ancho = 1150.0f;
-    float alto = 620.0f;
+    float alto = 820.0f;
 
     ImGui::SetNextWindowSize(ImVec2(ancho, alto), ImGuiCond_Always);
     ImGui::SetNextWindowPos(
@@ -193,11 +208,11 @@ void AppUI::mostrarMenuPrincipal() {
 
     ImGui::Dummy(ImVec2(0, 10));
 
-    // BOTONES EN UNA SOLA FILA
     if (ImGui::Button("Productos", ImVec2(210, 55))) {
         mostrarProductos = true;
         mostrarClientes = false;
         mostrarCortes = false;
+        mostrarInventario = false;
     }
 
     ImGui::SameLine();
@@ -206,6 +221,7 @@ void AppUI::mostrarMenuPrincipal() {
         mostrarClientes = true;
         mostrarProductos = false;
         mostrarCortes = false;
+        mostrarInventario = false;
     }
 
     ImGui::SameLine();
@@ -214,6 +230,7 @@ void AppUI::mostrarMenuPrincipal() {
         mostrarCortes = true;
         mostrarProductos = false;
         mostrarClientes = false;
+        mostrarInventario = false;
     }
 
     ImGui::SameLine();
@@ -228,12 +245,12 @@ void AppUI::mostrarMenuPrincipal() {
     ImGui::SameLine();
 
     if (ImGui::Button("Cerrar Sesion", ImVec2(230, 55))) {
-
         loginCorrecto = false;
 
         mostrarProductos = false;
         mostrarClientes = false;
         mostrarCortes = false;
+        mostrarInventario = false;
 
         strcpy_s(usuario, "");
         strcpy_s(password, "");
@@ -241,7 +258,10 @@ void AppUI::mostrarMenuPrincipal() {
 
     ImGui::Separator();
 
-    // MODULOS DENTRO DEL MENU (SIN VENTANAS EXTRA)
+    mostrarVentaRapida();
+
+    ImGui::Separator();
+
     if (mostrarProductos)
         mostrarModuloProductos();
 
@@ -265,10 +285,17 @@ void AppUI::mostrarModuloProductos() {
     ImGui::Text("Gestion de Productos");
     ImGui::Separator();
 
-    ImGui::InputText("Nombre", nombreProducto, IM_ARRAYSIZE(nombreProducto));
-    ImGui::InputFloat("Precio", &precioProducto);
-    ImGui::InputInt("Stock", &stockProducto);
-    ImGui::InputText("Categoria", categoriaProducto, IM_ARRAYSIZE(categoriaProducto));
+    ImGui::Text("Nombre");
+    ImGui::InputText("##nombreProducto", nombreProducto, IM_ARRAYSIZE(nombreProducto));
+
+    ImGui::Text("Precio");
+    ImGui::InputFloat("##precioProducto", &precioProducto);
+
+    ImGui::Text("Stock");
+    ImGui::InputInt("##stockProducto", &stockProducto);
+
+    ImGui::Text("Categoria");
+    ImGui::InputText("##categoriaProducto", categoriaProducto, IM_ARRAYSIZE(categoriaProducto));
 
     if (!modoEdicionProducto) {
         if (ImGui::Button("Agregar Producto", ImVec2(180, 35))) {
@@ -334,14 +361,17 @@ void AppUI::mostrarModuloProductos() {
     ImGui::Separator();
 
     ImGui::Text("Busqueda de productos");
+    ImGui::Separator();
 
-    ImGui::InputInt("Buscar por ID", &idBuscarProducto);
+    ImGui::Text("Buscar por ID");
+    ImGui::InputInt("##idBuscarProducto", &idBuscarProducto);
 
     if (ImGui::Button("Buscar ID", ImVec2(120, 35))) {
         Producto producto = productoDAO.buscarProductoPorId(idBuscarProducto);
 
         if (producto.getId() > 0) {
             idModificarProducto = producto.getId();
+
             strcpy_s(nombreProducto, producto.getNombre().c_str());
             precioProducto = producto.getPrecio();
             stockProducto = producto.getStock();
@@ -355,9 +385,14 @@ void AppUI::mostrarModuloProductos() {
         }
     }
 
-    ImGui::SameLine();
+    ImGui::Spacing();
 
-    ImGui::InputText("Buscar por nombre", buscarNombreProducto, IM_ARRAYSIZE(buscarNombreProducto));
+    ImGui::Text("Buscar por nombre");
+    ImGui::InputText(
+        "##buscarNombreProducto",
+        buscarNombreProducto,
+        IM_ARRAYSIZE(buscarNombreProducto)
+    );
 
     ImGui::Separator();
 
@@ -370,7 +405,12 @@ void AppUI::mostrarModuloProductos() {
         productos = productoDAO.obtenerProductos();
     }
 
-    if (ImGui::BeginTable("tabla_productos", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+    if (ImGui::BeginTable(
+        "tabla_productos",
+        6,
+        ImGuiTableFlags_Borders |
+        ImGuiTableFlags_RowBg)) {
+
         ImGui::TableSetupColumn("ID");
         ImGui::TableSetupColumn("Nombre");
         ImGui::TableSetupColumn("Precio");
@@ -399,45 +439,30 @@ void AppUI::mostrarModuloProductos() {
 
             ImGui::TableSetColumnIndex(5);
 
-            string btnEditar = "Editar##" + to_string(productos[i].getId());
+            string btnEditar = "Editar##producto" + to_string(productos[i].getId());
 
             if (ImGui::Button(btnEditar.c_str(), ImVec2(80, 30))) {
-
                 idModificarProducto = productos[i].getId();
 
                 strcpy_s(nombreProducto, productos[i].getNombre().c_str());
-
                 precioProducto = productos[i].getPrecio();
-
                 stockProducto = productos[i].getStock();
-
-                strcpy_s(categoriaProducto,
-                    productos[i].getCategoria().c_str());
+                strcpy_s(categoriaProducto, productos[i].getCategoria().c_str());
 
                 modoEdicionProducto = true;
-
-                strcpy_s(mensajeProducto,
-                    "Editando producto seleccionado");
+                strcpy_s(mensajeProducto, "Editando producto seleccionado");
             }
 
             ImGui::SameLine();
 
-            string btnEliminar = "Eliminar##" +
-                to_string(productos[i].getId());
+            string btnEliminar = "Eliminar##producto" + to_string(productos[i].getId());
 
-            if (ImGui::Button(btnEliminar.c_str(),
-                ImVec2(90, 30))) {
-
-                if (productoDAO.eliminarProducto(
-                    productos[i].getId())) {
-
-                    strcpy_s(mensajeProducto,
-                        "Producto eliminado correctamente");
+            if (ImGui::Button(btnEliminar.c_str(), ImVec2(90, 30))) {
+                if (productoDAO.eliminarProducto(productos[i].getId())) {
+                    strcpy_s(mensajeProducto, "Producto eliminado correctamente");
                 }
                 else {
-
-                    strcpy_s(mensajeProducto,
-                        "No se pudo eliminar el producto");
+                    strcpy_s(mensajeProducto, "No se pudo eliminar el producto");
                 }
             }
         }
@@ -446,6 +471,13 @@ void AppUI::mostrarModuloProductos() {
     }
 
     ImGui::End();
+}
+//Funcion regular para validacion de correos
+bool correoValido(const std::string& correo) {
+    std::regex patron(
+        R"(^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$)"
+    );
+    return std::regex_match(correo, patron);
 }
 
 void AppUI::mostrarModuloClientes() {
@@ -458,20 +490,32 @@ void AppUI::mostrarModuloClientes() {
     ImGui::Text("CRUD de Clientes");
     ImGui::Separator();
 
-    // FORMULARIO
-    ImGui::InputText("Nombre##clienteNombre", nombreCliente, IM_ARRAYSIZE(nombreCliente));
-    ImGui::InputText("Telefono##clienteTelefono", telefonoCliente, IM_ARRAYSIZE(telefonoCliente));
-    ImGui::InputText("Correo##clienteCorreo", correoCliente, IM_ARRAYSIZE(correoCliente));
+    ImGui::Text("Nombre");
+    ImGui::InputText("##clienteNombre", nombreCliente, IM_ARRAYSIZE(nombreCliente));
 
+    ImGui::Text("Telefono");
+    ImGui::InputText("##clienteTelefono", telefonoCliente, IM_ARRAYSIZE(telefonoCliente));
+
+    ImGui::Text("Correo");
+    ImGui::InputText("##clienteCorreo", correoCliente, IM_ARRAYSIZE(correoCliente));
+
+    ImGui::Text("NIT");
+    ImGui::InputText("##clienteNit", nitCliente, IM_ARRAYSIZE(nitCliente));
     if (!modoEdicionCliente) {
         if (ImGui::Button("Agregar Cliente##btnAgregarCliente", ImVec2(180, 35))) {
 
-            if (strlen(nombreCliente) > 0) {
-
+            if (strlen(nombreCliente) == 0) {
+                strcpy_s(mensajeCliente, "Ingrese nombre");
+            }
+            else if (!correoValido(correoCliente)) {
+                strcpy_s(mensajeCliente, "Correo invalido");
+            }
+            else {
                 clienteDAO.agregarCliente(
                     nombreCliente,
                     telefonoCliente,
-                    correoCliente
+                    correoCliente,
+                    nitCliente
                 );
 
                 strcpy_s(nombreCliente, "");
@@ -487,21 +531,28 @@ void AppUI::mostrarModuloClientes() {
 
             if (idModificarCliente > 0 && strlen(nombreCliente) > 0) {
 
-                clienteDAO.actualizarCliente(
-                    idModificarCliente,
-                    nombreCliente,
-                    telefonoCliente,
-                    correoCliente
-                );
+                if (!correoValido(correoCliente)) {
+                    strcpy_s(mensajeCliente, "Correo invalido");
+                }
+                else {
+                    clienteDAO.actualizarCliente(
+                        idModificarCliente,
+                        nombreCliente,
+                        telefonoCliente,
+                        correoCliente,
+                        nitCliente
+                    );
 
-                idModificarCliente = 0;
-                modoEdicionCliente = false;
+                    idModificarCliente = 0;
+                    modoEdicionCliente = false;
 
-                strcpy_s(nombreCliente, "");
-                strcpy_s(telefonoCliente, "");
-                strcpy_s(correoCliente, "");
+                    strcpy_s(nombreCliente, "");
+                    strcpy_s(telefonoCliente, "");
+                    strcpy_s(correoCliente, "");
+                    strcpy_s(nitCliente, "");
 
-                strcpy_s(mensajeCliente, "Cliente actualizado correctamente");
+                    strcpy_s(mensajeCliente, "Cliente actualizado correctamente");
+                }
             }
         }
     }
@@ -509,7 +560,6 @@ void AppUI::mostrarModuloClientes() {
     ImGui::SameLine();
 
     if (ImGui::Button("Limpiar##btnLimpiarCliente", ImVec2(120, 35))) {
-
         strcpy_s(nombreCliente, "");
         strcpy_s(telefonoCliente, "");
         strcpy_s(correoCliente, "");
@@ -528,17 +578,16 @@ void AppUI::mostrarModuloClientes() {
 
     ImGui::Separator();
 
-    // BUSQUEDA
     ImGui::Text("Busqueda de clientes");
 
-    ImGui::InputInt("Buscar por ID##buscarClienteID", &idBuscarCliente);
+    ImGui::Text("Buscar por ID");
+    ImGui::InputInt("##buscarClienteID", &idBuscarCliente);
 
     if (ImGui::Button("Buscar ID##btnBuscarClienteID", ImVec2(130, 35))) {
 
         Cliente cliente = clienteDAO.buscarClientePorId(idBuscarCliente);
 
         if (cliente.getId() > 0) {
-
             idModificarCliente = cliente.getId();
 
             strcpy_s(nombreCliente, sizeof(nombreCliente), cliente.getNombre().c_str());
@@ -556,11 +605,11 @@ void AppUI::mostrarModuloClientes() {
 
     ImGui::SameLine();
 
-    ImGui::InputText("Buscar por nombre##buscarClienteNombre", buscarNombreCliente, IM_ARRAYSIZE(buscarNombreCliente));
+    ImGui::Text("Buscar por nombre");
+    ImGui::InputText("##buscarClienteNombre", buscarNombreCliente, IM_ARRAYSIZE(buscarNombreCliente));
 
     ImGui::Separator();
 
-    // LISTADO
     vector<Cliente> clientes;
 
     if (strlen(buscarNombreCliente) > 0) {
@@ -573,18 +622,13 @@ void AppUI::mostrarModuloClientes() {
     if (ImGui::BeginTable(
         "tabla_clientes",
         5,
-        ImGuiTableFlags_Borders |
-        ImGuiTableFlags_RowBg)) {
+        ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
 
         ImGui::TableSetupColumn("ID");
         ImGui::TableSetupColumn("Nombre");
         ImGui::TableSetupColumn("Telefono");
         ImGui::TableSetupColumn("Correo");
-        ImGui::TableSetupColumn(
-            "Accion",
-            ImGuiTableColumnFlags_WidthFixed,
-            230.0f
-        );
+        ImGui::TableSetupColumn("Accion", ImGuiTableColumnFlags_WidthFixed, 230.0f);
 
         ImGui::TableHeadersRow();
 
@@ -606,12 +650,9 @@ void AppUI::mostrarModuloClientes() {
 
             ImGui::TableSetColumnIndex(4);
 
-            string btnEditar =
-                "Editar##clienteEditar" +
-                to_string(clientes[i].getId());
+            string btnEditar = "Editar##clienteEditar" + to_string(clientes[i].getId());
 
             if (ImGui::Button(btnEditar.c_str(), ImVec2(85, 30))) {
-
                 idModificarCliente = clientes[i].getId();
 
                 strcpy_s(nombreCliente, sizeof(nombreCliente), clientes[i].getNombre().c_str());
@@ -625,14 +666,10 @@ void AppUI::mostrarModuloClientes() {
 
             ImGui::SameLine();
 
-            string btnEliminar =
-                "Eliminar##clienteEliminar" +
-                to_string(clientes[i].getId());
+            string btnEliminar = "Eliminar##clienteEliminar" + to_string(clientes[i].getId());
 
             if (ImGui::Button(btnEliminar.c_str(), ImVec2(100, 30))) {
-
                 clienteDAO.eliminarCliente(clientes[i].getId());
-
                 strcpy_s(mensajeCliente, "Cliente eliminado correctamente");
             }
         }
@@ -642,14 +679,20 @@ void AppUI::mostrarModuloClientes() {
 
     ImGui::End();
 }
+    
 void AppUI::mostrarModuloCortes() {
 
-    ImGui::Spacing();
+    ImGui::SetNextWindowSize(ImVec2(1100, 650), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(170, 80), ImGuiCond_Once);
+
+    ImGui::Begin("Modulo Cortes", &mostrarCortes);
+
     ImGui::Text("Historial de Cortes");
     ImGui::Separator();
 
     if (ImGui::Button("Cerrar Cortes", ImVec2(180, 35))) {
         mostrarCortes = false;
+        mostrarDetalleCorte = false;
     }
 
     ImGui::Spacing();
@@ -658,7 +701,7 @@ void AppUI::mostrarModuloCortes() {
 
     if (ImGui::BeginTable(
         "tablaCortes",
-        6,
+        7,
         ImGuiTableFlags_Borders |
         ImGuiTableFlags_RowBg |
         ImGuiTableFlags_Resizable))
@@ -666,6 +709,7 @@ void AppUI::mostrarModuloCortes() {
         ImGui::TableSetupColumn("ID");
         ImGui::TableSetupColumn("Fecha");
         ImGui::TableSetupColumn("Descripcion");
+        ImGui::TableSetupColumn("Metodo Pago");
         ImGui::TableSetupColumn("Vendedor");
         ImGui::TableSetupColumn("Total");
         ImGui::TableSetupColumn("Accion");
@@ -686,32 +730,78 @@ void AppUI::mostrarModuloCortes() {
             ImGui::Text("%s", cortes[i].descripcion.c_str());
 
             ImGui::TableSetColumnIndex(3);
-            ImGui::Text("%s", cortes[i].vendedor.c_str());
+            ImGui::Text("%s", cortes[i].metodoPago.c_str());
 
             ImGui::TableSetColumnIndex(4);
-            ImGui::Text("Q %.2f", cortes[i].total);
+            ImGui::Text("%s", cortes[i].vendedor.c_str());
 
             ImGui::TableSetColumnIndex(5);
+            ImGui::Text("Q %.2f", cortes[i].total);
+
+            ImGui::TableSetColumnIndex(6);
 
             string btnVer = "Ver##corte" + to_string(cortes[i].id);
-            ImGui::Button(btnVer.c_str(), ImVec2(80, 30));
+
+            if (ImGui::Button(btnVer.c_str(), ImVec2(80, 30))) {
+                corteSeleccionado = cortes[i];
+                mostrarDetalleCorte = true;
+            }
         }
 
         ImGui::EndTable();
     }
+
+    if (mostrarDetalleCorte) {
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        ImGui::Text("Detalle del Corte");
+        ImGui::Separator();
+
+        ImGui::Text("ID: %d", corteSeleccionado.id);
+        ImGui::Text("Fecha: %s", corteSeleccionado.fecha.c_str());
+        ImGui::Text("Descripcion: %s", corteSeleccionado.descripcion.c_str());
+        ImGui::Text("Metodo Pago: %s", corteSeleccionado.metodoPago.c_str());
+        ImGui::Text("Vendedor: %s", corteSeleccionado.vendedor.c_str());
+        ImGui::Text("Total: Q %.2f", corteSeleccionado.total);
+
+        if (ImGui::Button("Cerrar detalle##cerrarDetalleCorte", ImVec2(160, 35))) {
+            mostrarDetalleCorte = false;
+        }
+    }
+
+    ImGui::End();
 }
 void AppUI::mostrarModuloInventario() {
 
-    ImGui::Spacing();
+    ImGui::SetNextWindowSize(ImVec2(1080, 650), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(180, 90), ImGuiCond_Once);
+
+    ImGui::Begin("Modulo Inventario", &mostrarInventario);
+
     ImGui::Text("Modulo Inventario");
     ImGui::Separator();
 
-    ImGui::InputText("Buscar producto##buscarInventario",
+    ImGui::Text("Buscar producto");
+    ImGui::InputText(
+        "##buscarInventario",
         buscarInventario,
-        IM_ARRAYSIZE(buscarInventario));
+        IM_ARRAYSIZE(buscarInventario)
+    );
 
-    ImGui::InputInt("ID Producto##idInventario", &idProductoInventario);
-    ImGui::InputInt("Cantidad##cantidadInventario", &cantidadInventario);
+    ImGui::Text("ID Producto");
+    ImGui::InputInt(
+        "##idProductoInventario",
+        &idProductoInventario
+    );
+
+    ImGui::Text("Cantidad");
+    ImGui::InputInt(
+        "##cantidadInventario",
+        &cantidadInventario
+    );
+
+    
 
     vector<Producto> productos;
 
@@ -865,5 +955,310 @@ void AppUI::mostrarModuloInventario() {
         }
 
         ImGui::EndTable();
+    }
+    ImGui::End();
+}
+void AppUI::mostrarVentaRapida() {
+
+    ImGui::Text("VENTA RAPIDA");
+    ImGui::Separator();
+
+    ImGui::Text("Buscar NIT cliente");
+    ImGui::InputText(
+        "##buscarNitClienteVenta",
+        buscarNitClienteVenta,
+        IM_ARRAYSIZE(buscarNitClienteVenta)
+    
+    );
+
+    if (strlen(buscarNitClienteVenta) > 0) {
+        vector<Cliente> clientesVenta =
+            clienteDAO.buscarClientesPorNit(buscarNitClienteVenta);
+
+        if (ImGui::BeginTable(
+            "tablaClientesVenta",
+            4,
+            ImGuiTableFlags_Borders |
+            ImGuiTableFlags_RowBg))
+        {
+            ImGui::TableSetupColumn("ID");
+            ImGui::TableSetupColumn("Cliente");
+            ImGui::TableSetupColumn("NIT");
+            ImGui::TableSetupColumn("Accion");
+            ImGui::TableHeadersRow();
+
+            for (int i = 0; i < clientesVenta.size(); i++) {
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("%d", clientesVenta[i].getId());
+
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s", clientesVenta[i].getNombre().c_str());
+
+                ImGui::TableSetColumnIndex(2);
+                ImGui::Text("%s", clientesVenta[i].getNit().c_str());
+
+                ImGui::TableSetColumnIndex(3);
+
+                string btnCliente =
+                    "Seleccionar##clienteVenta" +
+                    to_string(clientesVenta[i].getId());
+
+                if (ImGui::Button(btnCliente.c_str(), ImVec2(120, 30))) {
+                    idClienteVenta = clientesVenta[i].getId();
+
+                    strcpy_s(
+                        clienteSeleccionadoVenta,
+                        clientesVenta[i].getNombre().c_str()
+                    );
+
+                    strcpy_s(buscarNitClienteVenta, "");
+                    strcpy_s(mensajeVenta, "Cliente seleccionado");
+                }
+            }
+
+            ImGui::EndTable();
+        }
+    }
+
+    if (idClienteVenta > 0) {
+        ImGui::Text("Cliente seleccionado: %s", clienteSeleccionadoVenta);
+    }
+    else {
+        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Seleccione un cliente para la venta");
+    }
+
+    ImGui::Separator();
+
+    ImGui::Text("Buscar producto");
+    ImGui::InputText(
+        "##buscarProductoVenta",
+        buscarProductoVenta,
+        IM_ARRAYSIZE(buscarProductoVenta)
+    );
+
+    ImGui::Text("Cantidad");
+    ImGui::InputInt("##cantidadVenta", &cantidadVenta);
+
+    vector<Producto> productosVenta;
+
+    if (strlen(buscarProductoVenta) > 0) {
+        productosVenta = productoDAO.buscarProductosPorNombre(buscarProductoVenta);
+    }
+
+    if (strlen(buscarProductoVenta) > 0) {
+
+        if (ImGui::BeginTable("tablaBusquedaVenta", 5,
+            ImGuiTableFlags_Borders |
+            ImGuiTableFlags_RowBg))
+        {
+            ImGui::TableSetupColumn("ID");
+            ImGui::TableSetupColumn("Producto");
+            ImGui::TableSetupColumn("Precio");
+            ImGui::TableSetupColumn("Stock");
+            ImGui::TableSetupColumn("Accion");
+            ImGui::TableHeadersRow();
+
+            for (int i = 0; i < productosVenta.size(); i++) {
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("%d", productosVenta[i].getId());
+
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s", productosVenta[i].getNombre().c_str());
+
+                ImGui::TableSetColumnIndex(2);
+                ImGui::Text("Q %.2f", productosVenta[i].getPrecio());
+
+                ImGui::TableSetColumnIndex(3);
+                ImGui::Text("%d", productosVenta[i].getStock());
+
+                ImGui::TableSetColumnIndex(4);
+
+                string btnAgregar = "Agregar##ventaProducto" + to_string(productosVenta[i].getId());
+
+                if (ImGui::Button(btnAgregar.c_str(), ImVec2(90, 30))) {
+
+                    if (cantidadVenta <= 0) {
+                        strcpy_s(mensajeVenta, "Cantidad invalida");
+                    }
+                    else if (cantidadVenta > productosVenta[i].getStock()) {
+                        strcpy_s(mensajeVenta, "No hay suficiente stock");
+                    }
+                    else {
+                        ItemVenta item;
+                        item.idProducto = productosVenta[i].getId();
+                        item.nombre = productosVenta[i].getNombre();
+                        item.cantidad = cantidadVenta;
+                        item.precio = productosVenta[i].getPrecio();
+                        item.subtotal = item.precio * item.cantidad;
+
+                        carritoVenta.push_back(item);
+
+                        strcpy_s(buscarProductoVenta, "");
+                        cantidadVenta = 1;
+                        strcpy_s(mensajeVenta, "Producto agregado a la venta");
+                    }
+                }
+            }
+
+            ImGui::EndTable();
+        }
+    }
+
+    ImGui::Separator();
+    ImGui::Text("Ticket actual");
+
+    float total = 0.0f;
+
+    if (ImGui::BeginTable("tablaCarritoVenta", 5,
+        ImGuiTableFlags_Borders |
+        ImGuiTableFlags_RowBg))
+    {
+        ImGui::TableSetupColumn("Producto");
+        ImGui::TableSetupColumn("Cantidad");
+        ImGui::TableSetupColumn("Precio");
+        ImGui::TableSetupColumn("Subtotal");
+        ImGui::TableSetupColumn("Accion");
+        ImGui::TableHeadersRow();
+
+        for (int i = 0; i < carritoVenta.size(); i++) {
+
+            total += carritoVenta[i].subtotal;
+
+            ImGui::TableNextRow();
+
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("%s", carritoVenta[i].nombre.c_str());
+
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Text("%d", carritoVenta[i].cantidad);
+
+            ImGui::TableSetColumnIndex(2);
+            ImGui::Text("Q %.2f", carritoVenta[i].precio);
+
+            ImGui::TableSetColumnIndex(3);
+            ImGui::Text("Q %.2f", carritoVenta[i].subtotal);
+
+            ImGui::TableSetColumnIndex(4);
+
+            string btnEliminar = "Quitar##itemVenta" + to_string(i);
+
+            if (ImGui::Button(btnEliminar.c_str(), ImVec2(80, 30))) {
+                carritoVenta.erase(carritoVenta.begin() + i);
+                break;
+            }
+        }
+
+        ImGui::EndTable();
+    }
+
+    ImGui::Text("Total: Q %.2f", total);
+
+    const char* metodosPago[] = {
+    "Efectivo",
+    "Tarjeta",
+    "Transferencia"
+    };
+
+    ImGui::Text("Metodo de pago");
+    ImGui::Combo(
+        "##metodoPagoVenta",
+        &metodoPagoVenta,
+        "Efectivo\0Tarjeta\0Transferencia\0"
+    );
+
+    ImGui::Text("Pago cliente");
+    ImGui::InputFloat(
+        "##pagoClienteVenta",
+        &pagoClienteVenta
+    );
+
+    cambioVenta = pagoClienteVenta - total;
+
+    ImGui::Text("Cambio: Q %.2f", cambioVenta);
+
+    if (ImGui::Button("Cobrar venta##btnCobrarVenta", ImVec2(180, 35))) {
+
+        if (idClienteVenta <= 0) {
+            strcpy_s(mensajeVenta, "Seleccione un cliente");
+        }
+        else if (carritoVenta.empty()) {
+            strcpy_s(mensajeVenta, "Agregue productos al ticket");
+        }
+        else if (metodoPagoVenta == 0 && pagoClienteVenta < total) {
+            strcpy_s(mensajeVenta, "Pago insuficiente");
+        }
+        else {
+
+            string descripcion = "";
+
+            for (int i = 0; i < carritoVenta.size(); i++) {
+                descripcion += carritoVenta[i].nombre;
+                descripcion += " x";
+                descripcion += to_string(carritoVenta[i].cantidad);
+
+                if (i < carritoVenta.size() - 1) {
+                    descripcion += ", ";
+                }
+
+                Producto producto = productoDAO.buscarProductoPorId(
+                    carritoVenta[i].idProducto
+                );
+
+                int nuevoStock =
+                    producto.getStock() - carritoVenta[i].cantidad;
+
+                productoDAO.actualizarStockProducto(
+                    producto.getId(),
+                    nuevoStock
+                );
+            }
+
+            string metodo = metodosPago[metodoPagoVenta];
+
+            
+            
+
+            bool ok = ventaDAO.registrarVenta(
+                clienteSeleccionadoVenta,
+                descripcion,
+                vendedorVenta,
+                total,
+                metodo
+            );
+
+            if (ok) {
+                carritoVenta.clear();
+
+                strcpy_s(buscarProductoVenta, "");
+                strcpy_s(buscarNitClienteVenta, "");
+                strcpy_s(clienteSeleccionadoVenta, "");
+                strcpy_s(mensajeVenta, "Venta cobrada correctamente");
+
+                idClienteVenta = 0;
+                cantidadVenta = 1;
+                pagoClienteVenta = 0.0f;
+                cambioVenta = 0.0f;
+                metodoPagoVenta = 0;
+            }
+            else {
+                strcpy_s(mensajeVenta, "Error al cobrar venta");
+            }
+        }
+    }
+
+    if (strlen(mensajeVenta) > 0) {
+        ImGui::TextColored(ImVec4(0, 1, 0, 1), mensajeVenta);
+    }
+
+    if (ImGui::Button("Cancelar venta##cancelarVenta", ImVec2(160, 35))) {
+        carritoVenta.clear();
+        strcpy_s(buscarProductoVenta, "");
+        cantidadVenta = 1;
+        strcpy_s(mensajeVenta, "Venta cancelada");
     }
 }
