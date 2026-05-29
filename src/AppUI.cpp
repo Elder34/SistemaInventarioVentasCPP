@@ -62,18 +62,6 @@ AppUI::AppUI() {
     strcpy_s(mensajeVenta, "");
     carritoVenta.clear();
 
-    strcpy_s(rolUsuarioActual, "");
-    mostrarUsuarios = false;
-
-    strcpy_s(nombreUsuarioNuevo, "");
-    strcpy_s(usuarioNuevo, "");
-    strcpy_s(passwordNuevo, "");
-    strcpy_s(rolUsuarioNuevo, "");
-    strcpy_s(mensajeUsuario, "");
-
-    idUsuarioEditar = 0;
-    modoEdicionUsuario = false;
-
     pagoClienteVenta = 0.0f;
     cambioVenta = 0.0f;
     metodoPagoVenta = 0;
@@ -181,10 +169,6 @@ void AppUI::mostrarLogin() {
     if (ImGui::Button("Ingresar##btnLogin", ImVec2(180, 45))) {
         if (login.validarUsuario(usuario, password)) {
             loginCorrecto = true;
-
-            string rol = login.obtenerRolUsuario(usuario);
-            strcpy_s(rolUsuarioActual, rol.c_str());
-
             strcpy_s(mensajeLogin, "");
         }
         else {
@@ -201,16 +185,13 @@ void AppUI::mostrarLogin() {
     ImGui::End();
 }
 
+
 void AppUI::mostrarMenuPrincipal() {
 
     ImGuiIO& io = ImGui::GetIO();
 
     float ancho = 1150.0f;
     float alto = 820.0f;
-
-    bool esAdmin =
-        strcmp(rolUsuarioActual, "admin") == 0 ||
-        strcmp(rolUsuarioActual, "Administrador") == 0;
 
     ImGui::SetNextWindowSize(ImVec2(ancho, alto), ImGuiCond_Always);
     ImGui::SetNextWindowPos(
@@ -227,69 +208,52 @@ void AppUI::mostrarMenuPrincipal() {
 
     ImGui::Dummy(ImVec2(0, 10));
 
-    if (ImGui::Button("Productos", ImVec2(180, 55))) {
+    if (ImGui::Button("Productos", ImVec2(210, 55))) {
         mostrarProductos = true;
         mostrarClientes = false;
         mostrarCortes = false;
         mostrarInventario = false;
-        mostrarUsuarios = false;
     }
 
     ImGui::SameLine();
 
-    if (ImGui::Button("Clientes", ImVec2(180, 55))) {
+    if (ImGui::Button("Clientes", ImVec2(210, 55))) {
         mostrarClientes = true;
         mostrarProductos = false;
         mostrarCortes = false;
         mostrarInventario = false;
-        mostrarUsuarios = false;
     }
 
     ImGui::SameLine();
 
-    if (ImGui::Button("Cortes", ImVec2(180, 55))) {
+    if (ImGui::Button("Cortes", ImVec2(210, 55))) {
         mostrarCortes = true;
         mostrarProductos = false;
         mostrarClientes = false;
         mostrarInventario = false;
-        mostrarUsuarios = false;
-    }
-
-    if (esAdmin) {
-        ImGui::SameLine();
-
-        if (ImGui::Button("Inventario", ImVec2(180, 55))) {
-            mostrarInventario = true;
-            mostrarProductos = false;
-            mostrarClientes = false;
-            mostrarCortes = false;
-            mostrarUsuarios = false;
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Usuarios", ImVec2(180, 55))) {
-            mostrarUsuarios = true;
-            mostrarProductos = false;
-            mostrarClientes = false;
-            mostrarCortes = false;
-            mostrarInventario = false;
-        }
     }
 
     ImGui::SameLine();
 
-    if (ImGui::Button("Cerrar Sesion", ImVec2(180, 55))) {
+    if (ImGui::Button("Inventario", ImVec2(210, 55))) {
+        mostrarInventario = true;
+        mostrarProductos = false;
+        mostrarClientes = false;
+        mostrarCortes = false;
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Cerrar Sesion", ImVec2(230, 55))) {
         loginCorrecto = false;
+
         mostrarProductos = false;
         mostrarClientes = false;
         mostrarCortes = false;
         mostrarInventario = false;
-        mostrarUsuarios = false;
 
         strcpy_s(usuario, "");
         strcpy_s(password, "");
-        strcpy_s(rolUsuarioActual, "");
     }
 
     ImGui::Separator();
@@ -307,11 +271,8 @@ void AppUI::mostrarMenuPrincipal() {
     if (mostrarCortes)
         mostrarModuloCortes();
 
-    if (mostrarInventario && esAdmin)
+    if (mostrarInventario)
         mostrarModuloInventario();
-
-    if (mostrarUsuarios && esAdmin)
-        mostrarModuloUsuarios();
 
     ImGui::End();
 }
@@ -1300,68 +1261,4 @@ void AppUI::mostrarVentaRapida() {
         cantidadVenta = 1;
         strcpy_s(mensajeVenta, "Venta cancelada");
     }
-}
-void AppUI::mostrarModuloUsuarios() {
-
-    ImGui::SetNextWindowSize(ImVec2(900, 600), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(220, 100), ImGuiCond_Once);
-
-    ImGui::Begin("Modulo Usuarios", &mostrarUsuarios);
-
-    ImGui::Text("CRUD de Usuarios");
-    ImGui::Separator();
-
-    ImGui::Text("Nombre");
-    ImGui::InputText("##nombreUsuarioNuevo", nombreUsuarioNuevo, IM_ARRAYSIZE(nombreUsuarioNuevo));
-
-    ImGui::Text("Usuario");
-    ImGui::InputText("##usuarioNuevo", usuarioNuevo, IM_ARRAYSIZE(usuarioNuevo));
-
-    ImGui::Text("Password");
-    ImGui::InputText(
-        "##passwordNuevo",
-        passwordNuevo,
-        IM_ARRAYSIZE(passwordNuevo),
-        ImGuiInputTextFlags_Password
-    );
-
-    ImGui::Text("Rol");
-    ImGui::InputText("##rolUsuarioNuevo", rolUsuarioNuevo, IM_ARRAYSIZE(rolUsuarioNuevo));
-
-    if (ImGui::Button("Crear Usuario", ImVec2(180, 35))) {
-
-        if (strlen(nombreUsuarioNuevo) == 0 ||
-            strlen(usuarioNuevo) == 0 ||
-            strlen(passwordNuevo) == 0 ||
-            strlen(rolUsuarioNuevo) == 0) {
-
-            strcpy_s(mensajeUsuario, "Complete todos los campos");
-        }
-        else {
-            bool ok = usuarioDAO.agregarUsuario(
-                nombreUsuarioNuevo,
-                usuarioNuevo,
-                passwordNuevo,
-                rolUsuarioNuevo
-            );
-
-            if (ok) {
-                strcpy_s(mensajeUsuario, "Usuario creado");
-
-                strcpy_s(nombreUsuarioNuevo, "");
-                strcpy_s(usuarioNuevo, "");
-                strcpy_s(passwordNuevo, "");
-                strcpy_s(rolUsuarioNuevo, "");
-            }
-            else {
-                strcpy_s(mensajeUsuario, "Error al crear usuario");
-            }
-        }
-    }
-
-    if (strlen(mensajeUsuario) > 0) {
-        ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", mensajeUsuario);
-    }
-
-    ImGui::End();
 }

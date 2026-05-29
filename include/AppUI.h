@@ -7,14 +7,11 @@
 #include "Venta.h"
 #include <vector>
 #include <string>
-#include "UsuarioDAO.h"
 
 using namespace std;
 
 class AppUI {
 private:
-
-
     ProductoDAO productoDAO;
     ClienteDAO clienteDAO;
     Login login;
@@ -81,19 +78,6 @@ private:
 
     char buscarProductoVenta[100];
     int cantidadVenta;
-    
-    char rolUsuarioActual[30];
-
-    UsuarioDAO usuarioDAO;
-    char nombreUsuarioNuevo[100];
-    char rolUsuarioNuevo[30];
-    bool mostrarUsuarios;
-    char usuarioNuevo[50];
-    char passwordNuevo[50];
-    char mensajeUsuario[100];
-    int idUsuarioEditar;
-    bool modoEdicionUsuario;
-    void mostrarModuloUsuarios();
     
 
     void mostrarVentaRapida();
