@@ -1,10 +1,13 @@
 #pragma once
+
 #include "ProductoDAO.h"
 #include "ClienteDAO.h"
 #include "Login.h"
 #include "CorteDAO.h"
 #include "VentaDAO.h"
 #include "Venta.h"
+#include "UsuarioDAO.h"
+
 #include <vector>
 #include <string>
 
@@ -12,75 +15,71 @@ using namespace std;
 
 class AppUI {
 private:
+
     ProductoDAO productoDAO;
     ClienteDAO clienteDAO;
     Login login;
+    UsuarioDAO usuarioDAO;
+    VentaDAO ventaDAO;
+    CorteDAO corteDAO;
 
     bool loginCorrecto;
     bool mostrarProductos;
     bool mostrarClientes;
+    bool mostrarCortes;
+    bool mostrarInventario;
+    bool mostrarUsuarios;
+    bool mostrarDetalleCorte;
 
     char usuario[50];
     char password[50];
     char mensajeLogin[100];
 
+    // PRODUCTOS
     char nombreProducto[100];
     char categoriaProducto[100];
     float precioProducto;
     int stockProducto;
 
+    int idModificarProducto;
+    int idBuscarProducto;
+    bool modoEdicionProducto;
+    int idEliminar;
+    char buscarNombreProducto[100];
+    char mensajeProducto[150];
+
+    // CLIENTES
     int idModificarCliente;
     bool modoEdicionCliente;
-    char mensajeCliente[150];
+    int idEliminarCliente;
+    int idBuscarCliente;
+
     char nombreCliente[100];
     char telefonoCliente[100];
     char correoCliente[100];
-    int idEliminarCliente;
-    int idEliminar;
-    int idBuscarCliente;
-    char buscarNombreCliente[100];
     char nitCliente[30];
+    char buscarNombreCliente[100];
+    char mensajeCliente[150];
+
+    // VENTA RAPIDA
     char buscarNitClienteVenta[30];
     char clienteSeleccionadoVenta[100];
     int idClienteVenta;
 
-    int idModificarProducto;
-    int idBuscarProducto;
-    char buscarNombreProducto[100];
-    char mensajeProducto[150];
-    bool modoEdicionProducto;
+    char buscarProductoVenta[100];
+    int cantidadVenta;
 
-    void mostrarModuloCortes();
-    bool mostrarCortes = false;
-    CorteDAO corteDAO;
-    bool mostrarDetalleCorte;
-    Corte corteSeleccionado;
-
-    bool mostrarInventario;
-    int idProductoInventario;
-    int cantidadInventario;
-    char buscarInventario[100];
-    char mensajeInventario[150];
-
-    VentaDAO ventaDAO;
     char clienteVenta[100];
     char descripcionVenta[200];
     char vendedorVenta[100];
+
     float totalVenta;
+    float pagoClienteVenta;
+    float cambioVenta;
+    int metodoPagoVenta;
+
     char mensajeVenta[150];
 
-
-    void mostrarLogin();
-    void mostrarMenuPrincipal();
-    void mostrarModuloProductos();
-    void mostrarModuloClientes();
-    void mostrarModuloInventario();
-
-    char buscarProductoVenta[100];
-    int cantidadVenta;
-    
-
-    void mostrarVentaRapida();
     struct ItemVenta {
         int idProducto;
         string nombre;
@@ -91,9 +90,44 @@ private:
 
     vector<ItemVenta> carritoVenta;
 
-    float pagoClienteVenta;
-    float cambioVenta;
-    int metodoPagoVenta;
+    // CORTES
+    Corte corteSeleccionado;
+
+    // INVENTARIO
+    int idProductoInventario;
+    int cantidadInventario;
+    char buscarInventario[100];
+    char mensajeInventario[150];
+
+    // USUARIOS
+    char nombreUsuarioNuevo[100];
+    char usuarioNuevo[50];
+    char passwordNuevo[50];
+    char rolUsuarioNuevo[30];
+    char mensajeUsuario[100];
+
+    int idUsuarioEditar;
+    bool modoEdicionUsuario;
+
+    // FUNCIONES
+    void mostrarLogin();
+    void mostrarMenuPrincipal();
+
+    void mostrarModuloProductos();
+    void mostrarModuloClientes();
+    void mostrarModuloInventario();
+    void mostrarModuloCortes();
+    void mostrarModuloUsuarios();
+
+    void mostrarVentaRapida();
+
+    void generarTicketPDF(
+        string cliente,
+        string metodoPago,
+        float total,
+        float pago,
+        float cambio
+    );
 
 public:
     AppUI();

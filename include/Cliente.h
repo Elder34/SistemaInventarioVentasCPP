@@ -1,8 +1,11 @@
-#pragma once
+#pragma once //Evita que el archivo de encabezado (.h) se cargue varias veces durante la compilación.
 
-#include <string>
+
+#include <string> //Libreria
+
 using namespace std;
 
+//Clase privada
 class Cliente {
 private:
     int id;
@@ -11,8 +14,13 @@ private:
     string correo;
     string nit;
 
+    //clase cliente
 public:
+
+    //constructor
     Cliente();
+
+    //constructor con parametros
     Cliente(int id, string nombre, string telefono, string correo, string nit);
 
     int getId();
@@ -21,6 +29,8 @@ public:
     string getCorreo();
     string getNit();
 
+
+    //metodos set permiten modificar la información del cliente.
     void setId(int id);
     void setNombre(string nombre);
     void setTelefono(string telefono);

@@ -1,3 +1,5 @@
+//administra la comunicación entre el sistema y la base de datos para registrar y consultar ventas.
+
 #pragma once
 
 #include <string>
@@ -8,6 +10,8 @@ using namespace std;
 
 class VentaDAO {
 public:
+
+    //Registra una nueva venta en la base de datos.
     bool registrarVenta(
         string cliente,
         string descripcion,
@@ -15,5 +19,7 @@ public:
         float total,
         string metodoPago
     );
-    vector<Venta> obtenerVentas();
+
+    //Obtiene el historial de ventas almacenado en el sistema.
+    vector<Venta> obtenerVentas();//Lista completa de ventas registradas.
 };

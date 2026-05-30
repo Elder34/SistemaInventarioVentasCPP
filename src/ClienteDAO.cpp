@@ -6,12 +6,17 @@
 
 using namespace std;
 
+// Agrega un nuevo cliente a la base de datos
 void ClienteDAO::agregarCliente(string nombre, string telefono, string correo, string nit) {
     try {
+        // Se crea la conexión con la base de datos
         ConexionBD conexionBD;
         pqxx::connection conexion = conexionBD.conectar();
+
+        // Se inicia una transacción
         pqxx::work transaccion(conexion);
 
+        // Inserta los datos del cliente en la tabla clientes
         transaccion.exec_params(
             "INSERT INTO clientes(nombre, telefono, correo, nit) "
             "VALUES($1, $2, $3, $4)",
@@ -21,13 +26,16 @@ void ClienteDAO::agregarCliente(string nombre, string telefono, string correo, s
             nit
         );
 
+        // Guarda los cambios en la base de datos
         transaccion.commit();
     }
     catch (const exception& e) {
+        // Muestra un mensaje si ocurre un error
         cout << "Error al agregar cliente: " << e.what() << endl;
     }
 }
 
+// Obtiene todos los clientes registrados
 vector<Cliente> ClienteDAO::obtenerClientes() {
     vector<Cliente> clientes;
 
@@ -36,12 +44,14 @@ vector<Cliente> ClienteDAO::obtenerClientes() {
         pqxx::connection conexion = conexionBD.conectar();
         pqxx::work transaccion(conexion);
 
+        // Consulta todos los clientes ordenados por ID
         pqxx::result resultado = transaccion.exec(
             "SELECT id_cliente, nombre, telefono, correo, nit "
             "FROM clientes "
             "ORDER BY id_cliente ASC"
         );
 
+        // Recorre cada fila obtenida de la base de datos
         for (auto fila : resultado) {
             Cliente cliente(
                 fila["id_cliente"].as<int>(),
@@ -51,6 +61,7 @@ vector<Cliente> ClienteDAO::obtenerClientes() {
                 fila["nit"].is_null() ? "CF" : fila["nit"].as<string>()
             );
 
+            // Agrega el cliente al vector
             clientes.push_back(cliente);
         }
 
@@ -63,12 +74,14 @@ vector<Cliente> ClienteDAO::obtenerClientes() {
     return clientes;
 }
 
+// Actualiza los datos de un cliente existente
 bool ClienteDAO::actualizarCliente(int id, string nombre, string telefono, string correo, string nit) {
     try {
         ConexionBD conexionBD;
         pqxx::connection conexion = conexionBD.conectar();
         pqxx::work transaccion(conexion);
 
+        // Modifica los datos del cliente según su ID
         transaccion.exec_params(
             "UPDATE clientes "
             "SET nombre = $1, telefono = $2, correo = $3, nit = $4 "
@@ -89,12 +102,14 @@ bool ClienteDAO::actualizarCliente(int id, string nombre, string telefono, strin
     }
 }
 
+// Busca un cliente por su ID
 Cliente ClienteDAO::buscarClientePorId(int id) {
     try {
         ConexionBD conexionBD;
         pqxx::connection conexion = conexionBD.conectar();
         pqxx::work transaccion(conexion);
 
+        // Busca un cliente específico por id_cliente
         pqxx::result resultado = transaccion.exec_params(
             "SELECT id_cliente, nombre, telefono, correo, nit "
             "FROM clientes "
@@ -102,6 +117,7 @@ Cliente ClienteDAO::buscarClientePorId(int id) {
             id
         );
 
+        // Si encontró el cliente, lo retorna
         if (!resultado.empty()) {
             auto fila = resultado[0];
 
@@ -123,9 +139,11 @@ Cliente ClienteDAO::buscarClientePorId(int id) {
         cout << "Error al buscar cliente por ID: " << e.what() << endl;
     }
 
+    // Retorna un cliente vacío si no lo encuentra
     return Cliente();
 }
 
+// Busca clientes por nombre
 vector<Cliente> ClienteDAO::buscarClientesPorNombre(string nombre) {
     vector<Cliente> clientes;
 
@@ -134,6 +152,7 @@ vector<Cliente> ClienteDAO::buscarClientesPorNombre(string nombre) {
         pqxx::connection conexion = conexionBD.conectar();
         pqxx::work transaccion(conexion);
 
+        // Busca coincidencias aunque el nombre esté incompleto
         pqxx::result resultado = transaccion.exec_params(
             "SELECT id_cliente, nombre, telefono, correo, nit "
             "FROM clientes "
@@ -163,12 +182,14 @@ vector<Cliente> ClienteDAO::buscarClientesPorNombre(string nombre) {
     return clientes;
 }
 
+// Elimina un cliente por su ID
 bool ClienteDAO::eliminarCliente(int id) {
     try {
         ConexionBD conexionBD;
         pqxx::connection conexion = conexionBD.conectar();
         pqxx::work transaccion(conexion);
 
+        // Elimina el registro del cliente
         transaccion.exec_params(
             "DELETE FROM clientes WHERE id_cliente = $1",
             id
@@ -182,6 +203,8 @@ bool ClienteDAO::eliminarCliente(int id) {
         return false;
     }
 }
+
+// Busca clientes por NIT
 vector<Cliente> ClienteDAO::buscarClientesPorNit(string nit) {
     vector<Cliente> clientes;
 
@@ -190,6 +213,7 @@ vector<Cliente> ClienteDAO::buscarClientesPorNit(string nit) {
         pqxx::connection conexion = conexionBD.conectar();
         pqxx::work transaccion(conexion);
 
+        // Busca coincidencias del NIT ingresado
         pqxx::result resultado = transaccion.exec_params(
             "SELECT id_cliente, nombre, telefono, correo, nit "
             "FROM clientes "

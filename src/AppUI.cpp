@@ -4,9 +4,13 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "GLFW/glfw3.h"
-
+#include <fstream>
+#include <ctime>
 #include <cstring>
 #include <vector>
+
+#include <ctime>
+#include <sstream>
 
 using namespace std;
 
@@ -61,6 +65,18 @@ AppUI::AppUI() {
     cantidadVenta = 1;
     strcpy_s(mensajeVenta, "");
     carritoVenta.clear();
+
+    mostrarUsuarios = false;
+    mostrarUsuarios = false;
+
+    strcpy_s(nombreUsuarioNuevo, "");
+    strcpy_s(usuarioNuevo, "");
+    strcpy_s(passwordNuevo, "");
+    strcpy_s(rolUsuarioNuevo, "");
+    strcpy_s(mensajeUsuario, "");
+
+    idUsuarioEditar = 0;
+    modoEdicionUsuario = false;
 
     pagoClienteVenta = 0.0f;
     cambioVenta = 0.0f;
@@ -118,7 +134,7 @@ void AppUI::ejecutar() {
     glfwTerminate();
 }
 
-//Funcion Login
+//Funcion Login pide contraseña al usuario
 void AppUI::mostrarLogin() {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -185,12 +201,12 @@ void AppUI::mostrarLogin() {
     ImGui::End();
 }
 
-
+//Funcion de menu principar del programa
 void AppUI::mostrarMenuPrincipal() {
 
     ImGuiIO& io = ImGui::GetIO();
 
-    float ancho = 1150.0f;
+    float ancho = 1350.0f;
     float alto = 820.0f;
 
     ImGui::SetNextWindowSize(ImVec2(ancho, alto), ImGuiCond_Always);
@@ -208,6 +224,7 @@ void AppUI::mostrarMenuPrincipal() {
 
     ImGui::Dummy(ImVec2(0, 10));
 
+    //Botones de menu
     if (ImGui::Button("Productos", ImVec2(210, 55))) {
         mostrarProductos = true;
         mostrarClientes = false;
@@ -241,7 +258,18 @@ void AppUI::mostrarMenuPrincipal() {
         mostrarClientes = false;
         mostrarCortes = false;
     }
+    ImGui::SameLine();
 
+    if (ImGui::Button("Usuarios", ImVec2(180, 55))) {
+        mostrarUsuarios = true;
+
+        mostrarProductos = false;
+        mostrarClientes = false;
+        mostrarCortes = false;
+        mostrarInventario = false;
+    }
+
+    
     ImGui::SameLine();
 
     if (ImGui::Button("Cerrar Sesion", ImVec2(230, 55))) {
@@ -271,11 +299,16 @@ void AppUI::mostrarMenuPrincipal() {
     if (mostrarCortes)
         mostrarModuloCortes();
 
+    if (mostrarUsuarios)
+        mostrarModuloUsuarios();
+
     if (mostrarInventario)
         mostrarModuloInventario();
 
     ImGui::End();
 }
+
+//Funcion me modulo de productos 
 void AppUI::mostrarModuloProductos() {
     ImGui::SetNextWindowSize(ImVec2(1080, 750), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(130, 70), ImGuiCond_Once);
@@ -480,6 +513,8 @@ bool correoValido(const std::string& correo) {
     return std::regex_match(correo, patron);
 }
 
+//Funcion de modulo cliente 
+//Funcion princiapr es agregar clientes 
 void AppUI::mostrarModuloClientes() {
 
     ImGui::SetNextWindowSize(ImVec2(1100, 650), ImGuiCond_Always);
@@ -679,7 +714,8 @@ void AppUI::mostrarModuloClientes() {
 
     ImGui::End();
 }
-    
+
+//Funcion de Modulo de cortes muestrar las ventas realizaddas
 void AppUI::mostrarModuloCortes() {
 
     ImGui::SetNextWindowSize(ImVec2(1100, 650), ImGuiCond_Always);
@@ -772,6 +808,8 @@ void AppUI::mostrarModuloCortes() {
 
     ImGui::End();
 }
+
+//Funcion de Inventario Muestra el inventario ingresado
 void AppUI::mostrarModuloInventario() {
 
     ImGui::SetNextWindowSize(ImVec2(1080, 650), ImGuiCond_Always);
@@ -958,6 +996,8 @@ void AppUI::mostrarModuloInventario() {
     }
     ImGui::End();
 }
+
+//Funcion de Ventas rapidas se realizan ventas mediante busqueda de producto 
 void AppUI::mostrarVentaRapida() {
 
     ImGui::Text("VENTA RAPIDA");
@@ -1232,6 +1272,15 @@ void AppUI::mostrarVentaRapida() {
             );
 
             if (ok) {
+
+                generarTicketPDF(
+                    clienteSeleccionadoVenta,
+                    metodo,
+                    total,
+                    pagoClienteVenta,
+                    cambioVenta
+                );
+
                 carritoVenta.clear();
 
                 strcpy_s(buscarProductoVenta, "");
@@ -1261,4 +1310,293 @@ void AppUI::mostrarVentaRapida() {
         cantidadVenta = 1;
         strcpy_s(mensajeVenta, "Venta cancelada");
     }
+}
+
+//Funcion de usuarios creasion, edicion y eliminacion
+void AppUI::mostrarModuloUsuarios() {
+
+    ImGui::SetNextWindowSize(ImVec2(1000, 650), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(220, 100), ImGuiCond_Once);
+
+    ImGui::Begin("Modulo Usuarios", &mostrarUsuarios);
+
+    ImGui::Text("CRUD de Usuarios");
+    ImGui::Separator();
+
+    ImGui::Text("Nombre");
+    ImGui::InputText("##nombreUsuarioNuevo", nombreUsuarioNuevo, IM_ARRAYSIZE(nombreUsuarioNuevo));
+
+    ImGui::Text("Usuario");
+    ImGui::InputText("##usuarioNuevo", usuarioNuevo, IM_ARRAYSIZE(usuarioNuevo));
+
+    ImGui::Text("Password");
+    ImGui::InputText("##passwordNuevo", passwordNuevo, IM_ARRAYSIZE(passwordNuevo), ImGuiInputTextFlags_Password);
+
+    ImGui::Text("Rol");
+    ImGui::InputText("##rolUsuarioNuevo", rolUsuarioNuevo, IM_ARRAYSIZE(rolUsuarioNuevo));
+
+    if (!modoEdicionUsuario) {
+        if (ImGui::Button("Crear Usuario", ImVec2(180, 35))) {
+            bool ok = usuarioDAO.agregarUsuario(nombreUsuarioNuevo, usuarioNuevo, passwordNuevo, rolUsuarioNuevo);
+
+            if (ok) {
+                strcpy_s(mensajeUsuario, "Usuario creado correctamente");
+                strcpy_s(nombreUsuarioNuevo, "");
+                strcpy_s(usuarioNuevo, "");
+                strcpy_s(passwordNuevo, "");
+                strcpy_s(rolUsuarioNuevo, "");
+            }
+            else {
+                strcpy_s(mensajeUsuario, "Error al crear usuario");
+            }
+        }
+    }
+    else {
+        if (ImGui::Button("Guardar Cambios", ImVec2(180, 35))) {
+            bool ok = usuarioDAO.actualizarUsuario(
+                idUsuarioEditar,
+                nombreUsuarioNuevo,
+                usuarioNuevo,
+                passwordNuevo,
+                rolUsuarioNuevo
+            );
+
+            if (ok) {
+                strcpy_s(mensajeUsuario, "Usuario actualizado correctamente");
+                idUsuarioEditar = 0;
+                modoEdicionUsuario = false;
+
+                strcpy_s(nombreUsuarioNuevo, "");
+                strcpy_s(usuarioNuevo, "");
+                strcpy_s(passwordNuevo, "");
+                strcpy_s(rolUsuarioNuevo, "");
+            }
+            else {
+                strcpy_s(mensajeUsuario, "Error al actualizar usuario");
+            }
+        }
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Limpiar", ImVec2(120, 35))) {
+        strcpy_s(nombreUsuarioNuevo, "");
+        strcpy_s(usuarioNuevo, "");
+        strcpy_s(passwordNuevo, "");
+        strcpy_s(rolUsuarioNuevo, "");
+        strcpy_s(mensajeUsuario, "");
+
+        idUsuarioEditar = 0;
+        modoEdicionUsuario = false;
+    }
+
+    if (strlen(mensajeUsuario) > 0) {
+        ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", mensajeUsuario);
+    }
+
+    ImGui::Separator();
+
+    vector<Usuario> usuarios = usuarioDAO.obtenerUsuarios();
+
+    if (ImGui::BeginTable("tablaUsuarios", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+        ImGui::TableSetupColumn("ID");
+        ImGui::TableSetupColumn("Nombre");
+        ImGui::TableSetupColumn("Usuario");
+        ImGui::TableSetupColumn("Password");
+        ImGui::TableSetupColumn("Rol");
+        ImGui::TableSetupColumn("Accion");
+        ImGui::TableHeadersRow();
+
+        for (int i = 0; i < usuarios.size(); i++) {
+            ImGui::TableNextRow();
+
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("%d", usuarios[i].id);
+
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Text("%s", usuarios[i].nombre.c_str());
+
+            ImGui::TableSetColumnIndex(2);
+            ImGui::Text("%s", usuarios[i].usuario.c_str());
+
+            ImGui::TableSetColumnIndex(3);
+            ImGui::Text("%s", usuarios[i].password.c_str());
+
+            ImGui::TableSetColumnIndex(4);
+            ImGui::Text("%s", usuarios[i].rol.c_str());
+
+            ImGui::TableSetColumnIndex(5);
+
+            string btnEditar = "Editar##usuario" + to_string(usuarios[i].id);
+
+            if (ImGui::Button(btnEditar.c_str(), ImVec2(80, 30))) {
+                idUsuarioEditar = usuarios[i].id;
+                modoEdicionUsuario = true;
+
+                strcpy_s(nombreUsuarioNuevo, usuarios[i].nombre.c_str());
+                strcpy_s(usuarioNuevo, usuarios[i].usuario.c_str());
+                strcpy_s(passwordNuevo, usuarios[i].password.c_str());
+                strcpy_s(rolUsuarioNuevo, usuarios[i].rol.c_str());
+
+                strcpy_s(mensajeUsuario, "Editando usuario seleccionado");
+            }
+
+            ImGui::SameLine();
+
+            string btnEliminar = "Eliminar##usuario" + to_string(usuarios[i].id);
+
+            if (ImGui::Button(btnEliminar.c_str(), ImVec2(90, 30))) {
+                if (usuarioDAO.eliminarUsuario(usuarios[i].id)) {
+                    strcpy_s(mensajeUsuario, "Usuario eliminado correctamente");
+                }
+                else {
+                    strcpy_s(mensajeUsuario, "No se pudo eliminar usuario");
+                }
+            }
+        }
+
+        ImGui::EndTable();
+    }
+
+    ImGui::End();
+}
+
+//Funcion para generar el ticket de la venta realizada
+void AppUI::generarTicketPDF(
+    string cliente,
+    string metodoPago,
+    float total,
+    float pago,
+    float cambio
+) {
+    system("mkdir tickets > nul 2>&1");
+
+    time_t ahora = time(0);
+    tm tiempoLocal;
+    localtime_s(&tiempoLocal, &ahora);
+
+    char nombreArchivo[100];
+    strftime(
+        nombreArchivo,
+        sizeof(nombreArchivo),
+        "tickets/ticket_%Y%m%d_%H%M%S.pdf",
+        &tiempoLocal
+    );
+
+    ofstream pdf(nombreArchivo, ios::binary);
+
+    if (!pdf.is_open()) {
+        strcpy_s(
+            mensajeVenta,
+            sizeof(mensajeVenta),
+            "No se pudo generar PDF"
+        );
+        return;
+    }
+
+    stringstream contenido;
+    int y = 780;
+
+    auto linea = [&](string texto, int size = 12) {
+        contenido
+            << "BT /F1 "
+            << size
+            << " Tf 40 "
+            << y
+            << " Td ("
+            << texto
+            << ") Tj ET\n";
+
+        y -= 20;
+        };
+
+    char fecha[80];
+    strftime(
+        fecha,
+        sizeof(fecha),
+        "%d/%m/%Y %H:%M:%S",
+        &tiempoLocal
+    );
+
+    linea("NOVA MARKET", 18);
+    linea("Sistema Inventario y Ventas", 12);
+    linea("------------------------------------");
+
+    linea(string("Fecha: ") + fecha);
+    linea(string("Cliente: ") + cliente);
+    linea(string("Metodo Pago: ") + metodoPago);
+
+    linea("------------------------------------");
+    linea("PRODUCTOS", 14);
+    linea("------------------------------------");
+
+    for (int i = 0; i < carritoVenta.size(); i++) {
+
+        string producto =
+            carritoVenta[i].nombre
+            + " x"
+            + to_string(carritoVenta[i].cantidad)
+            + "  Q "
+            + to_string(carritoVenta[i].subtotal);
+
+        linea(producto);
+    }
+
+    linea("------------------------------------");
+
+    linea(
+        "TOTAL: Q "
+        + to_string(total),
+        14
+    );
+
+    linea(
+        "PAGO: Q "
+        + to_string(pago)
+    );
+
+    linea(
+        "CAMBIO: Q "
+        + to_string(cambio)
+    );
+
+    linea("------------------------------------");
+    linea("Gracias por su compra", 12);
+    linea("Vuelva pronto", 12);
+
+    string stream = contenido.str();
+
+    pdf << "%PDF-1.4\n";
+    pdf << "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n";
+    pdf << "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n";
+    pdf << "3 0 obj << /Type /Page /Parent 2 0 R "
+        << "/MediaBox [0 0 320 850] "
+        << "/Contents 4 0 R "
+        << "/Resources << /Font << /F1 5 0 R >> >> >> endobj\n";
+
+    pdf << "4 0 obj << /Length "
+        << stream.size()
+        << " >> stream\n";
+
+    pdf << stream;
+
+    pdf << "endstream endobj\n";
+
+    pdf << "5 0 obj << /Type /Font "
+        << "/Subtype /Type1 "
+        << "/BaseFont /Helvetica >> endobj\n";
+
+    pdf << "xref\n0 6\n";
+    pdf << "0000000000 65535 f \n";
+    pdf << "trailer << /Root 1 0 R /Size 6 >>\n";
+    pdf << "startxref\n0\n%%EOF";
+
+    pdf.close();
+
+    string comando =
+        "start \"\" \"" +
+        string(nombreArchivo) +
+        "\"";
+
+    system(comando.c_str());
 }
