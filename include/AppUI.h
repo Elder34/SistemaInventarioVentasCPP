@@ -36,24 +36,23 @@ private:
     char mensajeLogin[100];
 
     // PRODUCTOS
+    char codigoProducto[50];
     char nombreProducto[100];
     char categoriaProducto[100];
     float precioProducto;
     int stockProducto;
-
     int idModificarProducto;
     int idBuscarProducto;
-    bool modoEdicionProducto;
     int idEliminar;
+    bool modoEdicionProducto;
     char buscarNombreProducto[100];
     char mensajeProducto[150];
 
     // CLIENTES
     int idModificarCliente;
-    bool modoEdicionCliente;
     int idEliminarCliente;
     int idBuscarCliente;
-
+    bool modoEdicionCliente;
     char nombreCliente[100];
     char telefonoCliente[100];
     char correoCliente[100];
@@ -65,20 +64,17 @@ private:
     char buscarNitClienteVenta[30];
     char clienteSeleccionadoVenta[100];
     int idClienteVenta;
-
     char buscarProductoVenta[100];
     int cantidadVenta;
-
     char clienteVenta[100];
     char descripcionVenta[200];
     char vendedorVenta[100];
-
     float totalVenta;
     float pagoClienteVenta;
     float cambioVenta;
     int metodoPagoVenta;
-
     char mensajeVenta[150];
+    char referenciaPagoVenta[100];
 
     struct ItemVenta {
         int idProducto;
@@ -103,10 +99,11 @@ private:
     char nombreUsuarioNuevo[100];
     char usuarioNuevo[50];
     char passwordNuevo[50];
+    char rolUsuarioActual[30];
     char rolUsuarioNuevo[30];
     char mensajeUsuario[100];
-
     int idUsuarioEditar;
+    int idUsuarioEliminar;
     bool modoEdicionUsuario;
 
     // FUNCIONES
@@ -120,6 +117,11 @@ private:
     void mostrarModuloUsuarios();
 
     void mostrarVentaRapida();
+
+    bool popupConfirmacion(
+        const char* idPopup,
+        const char* mensaje
+    );
 
     void generarTicketPDF(
         string cliente,

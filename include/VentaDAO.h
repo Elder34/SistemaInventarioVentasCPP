@@ -17,7 +17,8 @@ public:
         string descripcion,
         string vendedor,
         float total,
-        string metodoPago
+        string metodoPago,
+        string numeroReferencia
     );
 
     //Obtiene el historial de ventas almacenado en el sistema.

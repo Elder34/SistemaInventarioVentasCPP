@@ -1,0 +1,32 @@
+%PDF-1.4
+1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 360 850] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj
+4 0 obj << /Length 995 >> stream
+BT /F1 18 Tf 40 780 Td (NOVA MARKET) Tj ET
+BT /F1 12 Tf 40 760 Td (Sistema Inventario y Ventas) Tj ET
+BT /F1 12 Tf 40 740 Td (------------------------------------) Tj ET
+BT /F1 12 Tf 40 720 Td (Fecha: 01/06/2026 16:06:01) Tj ET
+BT /F1 12 Tf 40 700 Td (Comprobante: NV-1780351561) Tj ET
+BT /F1 12 Tf 40 680 Td (Cliente: Brandon) Tj ET
+BT /F1 12 Tf 40 660 Td (Metodo Pago: Tarjeta) Tj ET
+BT /F1 12 Tf 40 640 Td (------------------------------------) Tj ET
+BT /F1 14 Tf 40 620 Td (PRODUCTOS) Tj ET
+BT /F1 12 Tf 40 600 Td (------------------------------------) Tj ET
+BT /F1 12 Tf 40 580 Td (Teclado Genius x1  Q 120.00) Tj ET
+BT /F1 12 Tf 40 560 Td (------------------------------------) Tj ET
+BT /F1 14 Tf 40 540 Td (TOTAL: Q 120.00) Tj ET
+BT /F1 12 Tf 40 520 Td (PAGO: Q 120.00) Tj ET
+BT /F1 12 Tf 40 500 Td (CAMBIO: Q 0.00) Tj ET
+BT /F1 12 Tf 40 480 Td (------------------------------------) Tj ET
+BT /F1 12 Tf 40 460 Td (Gracias por su compra) Tj ET
+BT /F1 12 Tf 40 440 Td (Vuelva pronto) Tj ET
+endstream endobj
+5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
+xref
+0 6
+0000000000 65535 f 
+trailer << /Root 1 0 R /Size 6 >>
+startxref
+0
+%%EOF

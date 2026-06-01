@@ -13,6 +13,7 @@ public:
 
     //Registra un nuevo producto en la base de datos.
     void agregarProducto(
+        string codigo,
         string nombre,
         float precio,
         int stock,

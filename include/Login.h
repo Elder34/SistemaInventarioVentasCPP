@@ -1,13 +1,13 @@
-//Administra el login 
-
 #pragma once
+
 #include <string>
 using namespace std;
 
-//Verificar credenciales y controlar el acceso de usuarios.
 class Login {
-public:
+private:
+    string rolUsuario;
 
-    //Método validarUsuario
+public:
     bool validarUsuario(string usuario, string password);
+    string getRolUsuario();
 };
